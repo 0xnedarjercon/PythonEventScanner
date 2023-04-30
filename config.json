@@ -1,0 +1,28 @@
+{
+  "APIURL": "https://mainnet.aurora.dev",
+  "STARTBLOCK": 90674400,
+  "ENDBLOCK": 90674405,
+  "MAXCHUNKSIZE": 10000,
+  "CONTRACTS": [],
+  "ABI": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "reserve0",
+          "type": "uint112"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint112",
+          "name": "reserve1",
+          "type": "uint112"
+        }
+      ],
+      "name": "Sync",
+      "type": "event"
+    }
+  ]
+}
