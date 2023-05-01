@@ -121,19 +121,17 @@ class EventScanner:
                     self.storeLog(events)
                     startChunk = endChunk
                     numChunks+=1
-                    
-
                     if time.time()-lastSave>self.saveInterval:
                         self.saveState()
                         self.backup()
-                except ValueError as ve:
+                except ValueError as e:
                     tries+=1
                     successes = 0
                     if tries > maxTries:
                         print('could not get logs, try reducing maxChunk')
                         sys.exit()
                     currentChunk -=  changeAmount
-                    print(ve, f'\nreducing scan size to {currentChunk} blocks')
+                    print(e, f'\nreducing scan size to {currentChunk} blocks')
         print(f'Scanned total {len(self.log)-initialEventCount} events from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunk')
         self.saveState()
 

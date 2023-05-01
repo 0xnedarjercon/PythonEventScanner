@@ -2,19 +2,3418 @@
     "90674403": {
         "0xa6c579690185c4b4a237148d45414cdc0ab4ad08efae21e5df5bc37002ee9973": {
             "0x47924Ae4968832984F4091EEC537dfF5c38948a4": {
-                "Sync5": {
+                "Transfer 0": {
+                    "from": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "to": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "value": 285644326831702880256786
+                },
+                "Transfer 1": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "value": 96260837415359878422905
+                },
+                "Transfer 2": {
+                    "from": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 285644326831702880256786
+                },
+                "Sync 5": {
                     "reserve0": 52705762478069288500750335660,
                     "reserve1": 62522983057557943304649444023
                 },
-                "Sync9": {
+                "Sync 9": {
                     "reserve0": 52706034129769630406988880022,
                     "reserve1": 62522661775151185138274228131
                 }
             },
+            "0x07F9F7f963C5cD2BBFFd30CcfB964Be114332E30": {
+                "Transfer 3": {
+                    "from": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "to": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "value": 271651700341906238544362
+                },
+                "Transfer 7": {
+                    "from": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "to": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "value": 271651700341906238544362
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 4": {
+                    "from": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "to": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "value": 322250810148150321414147
+                },
+                "Transfer 8": {
+                    "from": "0x47924Ae4968832984F4091EEC537dfF5c38948a4",
+                    "to": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "value": 321282406758166375215892
+                },
+                "Transfer 11": {
+                    "from": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 643533216906316696630039
+                }
+            },
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 12": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "value": 1245214
+                },
+                "Transfer 15": {
+                    "from": "0x5EBd5e963A00500B6a1234c621811c52AF0aAade",
+                    "to": "0x5174F1F043A9C66C58f62C3b81a24fb0F31DE94A",
+                    "value": 1245214
+                }
+            },
             "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
-                "Sync13": {
+                "Sync 13": {
                     "reserve0": 434166766908,
                     "reserve1": 223707186239445440735787125861
+                }
+            }
+        }
+    },
+    "90674408": {
+        "0xc1291d34bebfe6e4f7dc8074f6833c704d5a7c7ef6879d5f084f5209a41c16c5": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 17776321200390143999999951
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 209162770803246974967
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 209162770803246974967
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 949464676594821164265031,
+                    "reserve1": 80468781190629795057549538164
+                }
+            }
+        }
+    },
+    "90674469": {
+        "0xe5dbf817ec24f43490c8fc9f3002b76b8907a356c9631512541e6dcf05bfe11b": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 352781990078575843605
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 352781990078575843605
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 949111894604742588421426,
+                    "reserve1": 80498781190629795057549538150
+                }
+            }
+        }
+    },
+    "90674497": {
+        "0xd78386c68e970abebdda1659c71b4ea294bb87c9f7265d638898f8d6436ac1c3": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 352519534937270048519
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 352519534937270048519
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 948759375069805318372907,
+                    "reserve1": 80528781190629795057549538136
+                }
+            }
+        }
+    },
+    "90674508": {
+        "0xb921eeb1c886bd88689b887f4dc2788f39efe8e13da41e2ea726d7d25a8dd203": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30823396000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 361921928307694199505
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 948397453141497624173402,
+                    "reserve1": 80559604586629795057549538136
+                }
+            }
+        }
+    },
+    "90674509": {
+        "0xccf6d3e48251a3ecd191f1a3584e845106bb5543e8eb4e0a1c0891156e3c7c21": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x673949440ec99cF842B3b4C71f2866943BcA4607",
+                    "to": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "value": 2501000000000000000000
+                }
+            }
+        }
+    },
+    "90674510": {
+        "0xffccff53ca50e571c2be62eb7504cc82c5190e092ec8593762e00df343b1085d": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7",
+                    "value": 7984957100000000000000000
+                },
+                "Transfer 9": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 8019297629061885334655772
+                }
+            },
+            "0x09C9D464b58d96837f8d8b6f4d9fE4aD408d3A4f": {
+                "Transfer 1": {
+                    "from": "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7",
+                    "to": "0x0FA60315ea699f021602A7a83a967064ec781a68",
+                    "value": 31369994984665865181400
+                },
+                "Transfer 6": {
+                    "from": "0x0FA60315ea699f021602A7a83a967064ec781a68",
+                    "to": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "value": 31369994984665865181400
+                }
+            },
+            "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7": {
+                "Sync 2": {
+                    "reserve0": 222165987367730606746412621,
+                    "reserve1": 56388737374828771251538805952
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 94701631503069524035
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 10": {
+                    "reserve0": 948492154773000693697437,
+                    "reserve1": 80551585289000733172214882364
+                }
+            }
+        }
+    },
+    "90674515": {
+        "0xdfae22f82ac3ec7b755f4cbb807e4b7f13ba214a923debf743dc83b79f71e7d8": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 361921928000000000000
+                }
+            }
+        }
+    },
+    "90674526": {
+        "0xb5d9c430d678532632aebab98aa23672991008df60c650b6f4b61fbec1c67cdb": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c",
+                    "value": 39919016
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 2": {
+                    "from": "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 13779762965715557722734
+                }
+            },
+            "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c": {
+                "Sync 3": {
+                    "reserve0": 48743986753,
+                    "reserve1": 16862889741075474120229291
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 240000000000000000000
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 6": {
+                    "reserve0": 117536694269162574686521,
+                    "reserve1": 6741983527309173733079565
+                }
+            }
+        }
+    },
+    "90674529": {
+        "0x363291be9827d280f8fbad2fdccbfa33e6c186f56e27990f63fc73b5254e0462": {
+            "0x7faA64Faf54750a2E3eE621166635fEAF406Ab22": {
+                "Transfer 0": {
+                    "from": "0xcA461686C711AeaaDf0B516f9C2ad9d9B645a940",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 12051934339335975530801
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "value": 12051934339335975530801
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 37058043712611617435
+                }
+            },
+            "0xddCcf2F096fa400ce90ba0568908233e6A950961": {
+                "Sync 3": {
+                    "reserve0": 2466133066548617850258384,
+                    "reserve1": 7561084776973668931593
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 5": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c",
+                    "value": 2118631214372183610899
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 6": {
+                    "reserve0": 117573752312875186303956,
+                    "reserve1": 6739864896094801549468666
+                }
+            },
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 8": {
+                    "from": "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 6104993
+                },
+                "Transfer 11": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xcA461686C711AeaaDf0B516f9C2ad9d9B645a940",
+                    "value": 6066347
+                },
+                "Transfer 12": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 38646
+                }
+            },
+            "0x61C9E05d1Cdb1b70856c7a2c53fA9c220830633c": {
+                "Sync 9": {
+                    "reserve0": 48737881760,
+                    "reserve1": 16865008372289846303840190
+                }
+            },
+            "0xcA461686C711AeaaDf0B516f9C2ad9d9B645a940": {
+                "Sync 13": {
+                    "reserve0": 5929086814,
+                    "reserve1": 11790770883033076804061558
+                }
+            }
+        }
+    },
+    "90674541": {
+        "0xf2d5edcbc99701eb760c453313aad67a1ff24479b7e244e67be362e6f08a4e31": {
+            "0xE619a456c7C296520Ee9cF5E691F0ED609F946E4": {
+                "Transfer 0": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x69943923B2b075E0539e97C23ABA1c7d3A5d57a0",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90674563": {
+        "0xa8d0f75edcfa096480145ea134f154225364b216a733ecdf67f7ce0349e7f34f": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30779456000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 361202153491919458947
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 948130952619508774238490,
+                    "reserve1": 80582364745000733172214882364
+                }
+            }
+        }
+    },
+    "90674569": {
+        "0x6efed9631137ccba9b5f9ca75d6053dfae9a43064a0ad43b8c2ee41b410c3749": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 361202154000000000000
+                }
+            }
+        }
+    },
+    "90674597": {
+        "0xb79854bc6de68dbb12059bd0a88ddcf49bf213fefa04665fce171cdc27bfd8bb": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "value": 1000000
+                }
+            }
+        }
+    },
+    "90674606": {
+        "0xe6845894ed045b9fb2f695735f4b32d1314a79c9e280dd5ac3207eb2132d31af": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0x047e3eE8Da241acfF5d04fc77e138b50BAFf02f0",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674617": {
+        "0xd3337714654f576cfef03555913de82b4156fd68f5634d009cd81bf00207a64e": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "value": 36635055
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 18848337729732676799701238
+                }
+            },
+            "0x03B666f3488a7992b2385B12dF7f35156d7b29cD": {
+                "Sync 3": {
+                    "reserve0": 446935339964,
+                    "reserve1": 230616381055569637792906258288
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 19270792000069559
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 6": {
+                    "reserve0": 121680225873144235752220385296,
+                    "reserve1": 124762503306185489246
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 220000000000000000000
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116982084791859796920815,
+                    "reserve1": 10235518116941684149
+                }
+            }
+        }
+    },
+    "90674620": {
+        "0x28311ebc58ab4a8532925518e29e667f9d09431ac1a2727ab61330ec90ec9a39": {
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 0": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "value": 1797649895649614
+                },
+                "Transfer 1": {
+                    "from": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "to": "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97",
+                    "value": 1789331210839911
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97",
+                    "to": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "value": 1744655253579839883298323
+                }
+            },
+            "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97": {
+                "Sync 3": {
+                    "reserve0": 4623221041239912257104290260,
+                    "reserve1": 4733915485850679291
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 20610843341501377182
+                }
+            },
+            "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d": {
+                "Sync 6": {
+                    "reserve0": 5139770385596793375417,
+                    "reserve1": 435942955746934542757038393
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 8": {
+                    "reserve0": 117002695635201298297997,
+                    "reserve1": 10233720467046034535
+                }
+            }
+        }
+    },
+    "90674622": {
+        "0xc337aae0ea9d38601f1e5fd7fa14e12aa89c3dd95c97558168d42aa67d679a36": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0x162d203D8Bf55ad0Cc5677637720CBD2903A7B28",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674638": {
+        "0x279390b840842d842dac3394c173a9b57bba37edc33a7d2bf87e49c4469513c3": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0x9DBa12c75549ee7bbD9a15992578B99F60a3402D",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674641": {
+        "0x79d536a6250d409c06c0c978ab79af495c70fd406e6ea0cd9049ff9a672e813d": {
+            "0xF4eB217Ba2454613b15dBdea6e5f22276410e89e": {
+                "Transfer 0": {
+                    "from": "0xE3bb0ef1C7f2E0D2C9Ee34E2073dc757d69013A9",
+                    "to": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "value": 199995
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 2": {
+                    "from": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "to": "0xa3a1eF5Ae6561572023363862e238aFA84C72ef5",
+                    "value": 30926961561244144
+                }
+            },
+            "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d": {
+                "Sync 3": {
+                    "reserve0": 18602299108153274902,
+                    "reserve1": 120254331
+                }
+            }
+        }
+    },
+    "90674654": {
+        "0xeccbb7f022149f99136c85c00906343cadece4c969dd19b43be9e6b072b52a24": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0x5336222420c4e922aDF7d2A8624f2Cf3F4ACC0c9",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674672": {
+        "0x96f92998efc65e1ba780ace9262d654c110bb212a83bf4a85356123133734a7e": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0xFaD42DA17A26E854dfF38a79d21Ab3499534cA45",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674684": {
+        "0x4522bb4e973114b612f94191d1b7ab354a5b83da990662a126a4e1dc247a0747": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 2501000000000000000000
+                }
+            }
+        }
+    },
+    "90674689": {
+        "0x74ff3ffe79b4a0c48d8ea4d9c7ce864c07259a873371460e3b2fbac5e5f7becd": {
+            "0x6341dA9A0bdC4df98f16B3a02c880f44019Cff2e": {
+                "Transfer 0": {
+                    "from": "0x2C0E521427a43192C50aF91d4FAD05998fec3c85",
+                    "to": "0x1a7f0D2d0eC5a8658Fe4B3E2967ecCf4A7E291B0",
+                    "value": 1000
+                }
+            }
+        }
+    },
+    "90674697": {
+        "0xc08b51c71f99a6bc84bdf1fa6040d538fbe726d395babab1317610ddb1092965": {
+            "0xF70aCE41B9cAF97fa11ebdF8A0f304bEd29079B3": {
+                "Transfer 0": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x047e3eE8Da241acfF5d04fc77e138b50BAFf02f0",
+                    "value": 5000000
+                }
+            }
+        }
+    },
+    "90674706": {
+        "0x526561ab5332b9d122740d7e08dc4217f9930d39751d9703364114daa6170ffb": {
+            "0xF70aCE41B9cAF97fa11ebdF8A0f304bEd29079B3": {
+                "Transfer 0": {
+                    "from": "0x047e3eE8Da241acfF5d04fc77e138b50BAFf02f0",
+                    "to": "0x0bf3465856f5C845e6e6f95117c0d752b3a39e0C",
+                    "value": 555
+                }
+            }
+        }
+    },
+    "90674733": {
+        "0x54cf702584ef24065cbd15523a2ac0df47e7f334602128d598229d9121e7fff4": {
+            "0xF70aCE41B9cAF97fa11ebdF8A0f304bEd29079B3": {
+                "Transfer 1": {
+                    "from": "0x047e3eE8Da241acfF5d04fc77e138b50BAFf02f0",
+                    "to": "0x0bf3465856f5C845e6e6f95117c0d752b3a39e0C",
+                    "value": 50
+                }
+            }
+        }
+    },
+    "90674735": {
+        "0x91cfa21356e358aaaad7fc0ccd70639021bda4e147cb454ec16eda09c83b875d": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 351790057811365753623
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 351790057811365753623
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 947779162561697408484867,
+                    "reserve1": 80612364745000733172214882350
+                }
+            }
+        }
+    },
+    "90674738": {
+        "0x2ebd0e794a720ccfea994ca765fac1d35358902b26752b1143f3b3ad7a272980": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "value": 4098558879507197374750321
+                },
+                "Transfer 1": {
+                    "from": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "to": "0xc374776Cf5C497Adeef6b505588b00cB298531FD",
+                    "value": 4089596733876592396471900
+                }
+            },
+            "0x885f8CF6E45bdd3fdcDc644efdcd0AC93880c781": {
+                "Transfer 2": {
+                    "from": "0xc374776Cf5C497Adeef6b505588b00cB298531FD",
+                    "to": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "value": 471560063898088362492
+                }
+            },
+            "0xc374776Cf5C497Adeef6b505588b00cB298531FD": {
+                "Sync 3": {
+                    "reserve0": 4611245680353221884489211,
+                    "reserve1": 39875067457399305641671045891
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 48335208520633738627
+                }
+            },
+            "0xFE28a27a95e51BB2604aBD65375411A059371616": {
+                "Sync 6": {
+                    "reserve0": 252146731859803599059855,
+                    "reserve1": 25874489742556559770127
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 8": {
+                    "reserve0": 947827497770218042223494,
+                    "reserve1": 80608266186121225974840132029
+                }
+            }
+        }
+    },
+    "90674755": {
+        "0x02e4e772caddbdbd08156d90a97b8b8c3d76f238ed6d65d4c19b26fd43da2862": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 351564504545261602242
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 351564504545261602242
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 947475933265672780621252,
+                    "reserve1": 80638266186121225974840132015
+                }
+            }
+        }
+    },
+    "90674785": {
+        "0x2d57f1f2f1c2d86a100a45677c85bbe6a3b715cc2f3746996c20088f3abdd563": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 20961786353465425919999934
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 245492321951443259370
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 245492321951443259370
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 947230440943721337361882,
+                    "reserve1": 80659227972474691400760131949
+                }
+            }
+        }
+    },
+    "90674797": {
+        "0xb0cc52369bb1b1225d55df41791c0adf77968811906fa10e7c8c986f0aa66f04": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30779519000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 360241195039741707431
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 946870199748681595654451,
+                    "reserve1": 80690007491474691400760131949
+                }
+            }
+        }
+    },
+    "90674802": {
+        "0x2669e902904a520b46559e9e5e5fec4757b2b9bed91cdc7cbd8a632049383b1b": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 360241195000000000000
+                }
+            }
+        }
+    },
+    "90674818": {
+        "0x169f4d4cc74b453357b427a6f9b8792258511775a7f97c39526ec4e4c4ff1527": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x673949440ec99cF842B3b4C71f2866943BcA4607",
+                    "to": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "value": 2512000000000000000000
+                }
+            }
+        }
+    },
+    "90674938": {
+        "0x53a34da160db2bb32b999e03a2387b5d29439ca8d52794251194a0f0dbcedaff": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x9a279372a8B4B89624FB192D053FE1509b1a93c9",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90674969": {
+        "0xc8bb566ace39034fa59873de6804bff8c813cd978392cc6a3ca111a228f6f438": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x75ecD5285d582fc9ab22F38fD446AB5a09006232",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90674992": {
+        "0x8def2519b83799215a2a8d64149e5b8b21cfab6f88560f3cf49b6dd7c6428d74": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 2512000000000000000000
+                }
+            }
+        }
+    },
+    "90674993": {
+        "0xb44a5adfd69fe10ed28fec956634f1d10d1c417a329fef0a2c464bc32a81526a": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x509D3E8865Ae85563a4bf7a24116BfdE790b45EA",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90674997": {
+        "0x2f0ac247c1b82773f381212e9ab55f3383aa41140f268cb2091c524bbf955115": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0xCD627e1a5A2A12B9179De84D8D9bf90A5b1438ba",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90675004": {
+        "0x5c6f45c014a3f7379b1d103088fd587e13994ce7e0143b5db2291717e7aca3ae": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 3": {
+                    "from": "0x6C78A66dC0eEE4738D473381B380ce63446b316C",
+                    "to": "0xe5308dc623101508952948b141fD9eaBd3337D99",
+                    "value": 100000000
+                }
+            },
+            "0xe5308dc623101508952948b141fD9eaBd3337D99": {
+                "Transfer 6": {
+                    "from": "0xe5308dc623101508952948b141fD9eaBd3337D99",
+                    "to": "0x6C78A66dC0eEE4738D473381B380ce63446b316C",
+                    "value": 49679920511
+                }
+            }
+        }
+    },
+    "90675005": {
+        "0x9553bdaebaed7824e1ff0187c1b9f7424ad97f0ee6b3fccd74294233f176dfd5": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "value": 36747963
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 18903328491507029697149122
+                }
+            },
+            "0x03B666f3488a7992b2385B12dF7f35156d7b29cD": {
+                "Sync 3": {
+                    "reserve0": 446972087927,
+                    "reserve1": 230597477727078130763209109166
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 5": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 12673067062184328219096
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 6": {
+                    "reserve0": 93390147973608225339224566530,
+                    "reserve1": 62785801319659950153369315
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 220000000000000000000
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 9": {
+                    "reserve0": 117353752312875186303956,
+                    "reserve1": 6752537963156985877687762
+                }
+            }
+        }
+    },
+    "90675016": {
+        "0x618783f28ba023de41c5e9036e707c2c079a35332720e88b985c13340fe17fe9": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 43543896
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 22366723797035067099253947
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434210310804,
+                    "reserve1": 223684819515648405668687871914
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 22860305116634070
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 6": {
+                    "reserve0": 121702592596941270819319639243,
+                    "reserve1": 124739643001068855176
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 260000000000000000000
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116742695635201298297997,
+                    "reserve1": 10256580772162668605
+                }
+            }
+        }
+    },
+    "90675018": {
+        "0xedb555fbba76a05190809079c8cdbfe06ad8c050a0dc20549da71df8530eed84": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "value": 6492829500000000000000000
+                },
+                "Transfer 2": {
+                    "from": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "to": "0x6BB0c4d909a84d118B5e6c4b17117e79E621ae94",
+                    "value": 6492829500000000000000000
+                },
+                "Transfer 13": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 6508513020597090243425150
+                }
+            },
+            "0x6BB0c4d909a84d118B5e6c4b17117e79E621ae94": {
+                "Transfer 4": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "value": 6492829500000000000
+                },
+                "Transfer 8": {
+                    "from": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "to": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "value": 6492829500000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 9": {
+                    "from": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 76441621673413837797
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 10": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 6691361799943137
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 11": {
+                    "reserve0": 116819137256874712135794,
+                    "reserve1": 10249889410362725468
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 14": {
+                    "reserve0": 121696084083920673729076214093,
+                    "reserve1": 124746334362868798313
+                }
+            }
+        },
+        "0x224c16fcd4a63ce541845b6d5d1d8132c1720cb1d8d740451a1dd4199261e7dd": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0xBBf3D4281F10E537d5b13CA80bE22362310b2bf9",
+                    "value": 7411527100000000000000000
+                },
+                "Transfer 12": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 7429914014593200154077267
+                }
+            },
+            "0x9f1F933C660a1DC856F0E0Fe058435879c5CCEf0": {
+                "Transfer 1": {
+                    "from": "0xBBf3D4281F10E537d5b13CA80bE22362310b2bf9",
+                    "to": "0x26fAA47382C5790400bA48f8B0AC2705FFeA58A2",
+                    "value": 31372562813539030131228
+                },
+                "Transfer 6": {
+                    "from": "0x26fAA47382C5790400bA48f8B0AC2705FFeA58A2",
+                    "to": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "value": 31372562813539030131228
+                }
+            },
+            "0xBBf3D4281F10E537d5b13CA80bE22362310b2bf9": {
+                "Sync 2": {
+                    "reserve0": 150388524602182171522250733,
+                    "reserve1": 35428961444649680770592829585
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 87395647266733532984
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 9": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 7639524610559643
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 10": {
+                    "reserve0": 116906532904141445668778,
+                    "reserve1": 10242249885752165825
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 13": {
+                    "reserve0": 121688654169906080528922136826,
+                    "reserve1": 124753973887479357956
+                }
+            }
+        }
+    },
+    "90675019": {
+        "0xf55319d4073ba784d5f3141b4bd5de26ea65bd702b0c54e58ce9ad441a551e26": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x84567E7511E0d97DE676d236AEa7aE688221799e",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 8541660252602263109
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 8541660252602263109
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 2": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7",
+                    "value": 746040497620716
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 3": {
+                    "reserve0": 116915074564394047931887,
+                    "reserve1": 10241503845254545109
+                }
+            },
+            "0x5ce9F0B6AFb36135b5ddBF11705cEB65E634A9dC": {
+                "Transfer 5": {
+                    "from": "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7",
+                    "to": "0xa9eded3E339b9cd92bB6DEF5c5379d678131fF90",
+                    "value": 65454329965889980643
+                }
+            },
+            "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7": {
+                "Sync 6": {
+                    "reserve0": 6273648620381966138619,
+                    "reserve1": 72037806118979946
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 8": {
+                    "from": "0xa9eded3E339b9cd92bB6DEF5c5379d678131fF90",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 730013777294137515632849
+                },
+                "Transfer 11": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x84567E7511E0d97DE676d236AEa7aE688221799e",
+                    "value": 720981218712287026762401
+                },
+                "Transfer 12": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 9032558581850488870448
+                }
+            },
+            "0xa9eded3E339b9cd92bB6DEF5c5379d678131fF90": {
+                "Sync 9": {
+                    "reserve0": 538791383282227069799803,
+                    "reserve1": 6026503253854288175983117696
+                }
+            },
+            "0x84567E7511E0d97DE676d236AEa7aE688221799e": {
+                "Sync 13": {
+                    "reserve0": 1844964788549932659204,
+                    "reserve1": 155982882023156611212665448
+                }
+            }
+        }
+    },
+    "90675020": {
+        "0x519872bd55fc7170c2f9979fc8e7441f6d404d545519acc23bd4c91c3e9e750f": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0xE04162a13bedC462dbe4731a776a50C46D46E848",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675023": {
+        "0x426ff45621490d4ffbc13542a86e67d11df9d43204322173dde920023cdd45ca": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xE8d53D54179A7736EA339f33C1bf458936Fb801e",
+                    "to": "0x71032717c4f5cd6EaF3ec557EB84A5d019606dc7",
+                    "value": 12000000000000000000000
+                }
+            }
+        }
+    },
+    "90675028": {
+        "0x5b644e0213bcf62af41672fd291698539268423a4bb9dbb61df5efb3264f05f2": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 59320045
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 30463083129314368370031295
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434269630849,
+                    "reserve1": 223654356432519091300317840619
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 31128983150547565
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 6": {
+                    "reserve0": 121719117253035394897292168121,
+                    "reserve1": 124722844904328810391
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 353226100000000000000
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116561848464394047931887,
+                    "reserve1": 10272632828405092674
+                }
+            }
+        }
+    },
+    "90675031": {
+        "0x0c202c114f8f10038986d9461f12362dc77e21817a99084254154a621f89d7bc": {
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 0": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "value": 4772961712247826
+                },
+                "Transfer 1": {
+                    "from": "0x808ac9ED0fD96b0665F42F60A3946D35d1fe08fF",
+                    "to": "0x63b4a0538CE8D90876B201af1020d13308a8B253",
+                    "value": 4759488660229874
+                }
+            },
+            "0x885f8CF6E45bdd3fdcDc644efdcd0AC93880c781": {
+                "Transfer 2": {
+                    "from": "0x63b4a0538CE8D90876B201af1020d13308a8B253",
+                    "to": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "value": 532315139944702225143
+                }
+            },
+            "0x63b4a0538CE8D90876B201af1020d13308a8B253": {
+                "Sync 3": {
+                    "reserve0": 1204355813126211621829157,
+                    "reserve1": 10740733450519440795
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 54346212839607533838
+                }
+            },
+            "0xFE28a27a95e51BB2604aBD65375411A059371616": {
+                "Sync 6": {
+                    "reserve0": 252679046999748301284998,
+                    "reserve1": 25820143529716952236289
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 8": {
+                    "reserve0": 116616194677233655465725,
+                    "reserve1": 10267859866692844848
+                }
+            }
+        },
+        "0x39bf2a84d4b1f3a77d32700a772d7fe685068992da4a83c76d427b30ffa88752": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0xBf560771B6002a58477EFBCDD6774A5a1947587B",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 471972
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x9A384CB2E6DBE831037fA91Bc68469be2Cd7E94D",
+                    "value": 471972
+                }
+            },
+            "0xfb8ec08c4e0351f21E1bdAD02b7b369AC96DFc48": {
+                "Transfer 2": {
+                    "from": "0x9A384CB2E6DBE831037fA91Bc68469be2Cd7E94D",
+                    "to": "0xa3F8B8e5236E0CF8aEdcB2adc6EDA74A05f925B5",
+                    "value": 26985938513481860564
+                }
+            },
+            "0x9A384CB2E6DBE831037fA91Bc68469be2Cd7E94D": {
+                "Sync 3": {
+                    "reserve0": 83258178,
+                    "reserve1": 4742952009806488227365
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0xa3F8B8e5236E0CF8aEdcB2adc6EDA74A05f925B5",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 2968130425057997752
+                }
+            },
+            "0xa3F8B8e5236E0CF8aEdcB2adc6EDA74A05f925B5": {
+                "Sync 6": {
+                    "reserve0": 77804070621405070949,
+                    "reserve1": 732957824541743978242
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97",
+                    "value": 260548265115649
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116619162807658713463477,
+                    "reserve1": 10267599318427729199
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 11": {
+                    "from": "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 253932933790080436881496
+                },
+                "Transfer 14": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xBf560771B6002a58477EFBCDD6774A5a1947587B",
+                    "value": 243406349967294663884111
+                },
+                "Transfer 15": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 10526583822785772997385
+                }
+            },
+            "0x256d03607eeE0156b8A2aB84da1D5B283219Fe97": {
+                "Sync 12": {
+                    "reserve0": 4622967108306122176667408764,
+                    "reserve1": 4734176034115794940
+                }
+            },
+            "0xBf560771B6002a58477EFBCDD6774A5a1947587B": {
+                "Sync 16": {
+                    "reserve0": 6176740872,
+                    "reserve1": 3179351188289585999603274799
+                }
+            }
+        }
+    },
+    "90675034": {
+        "0xc3c829747a64bb9157c57ecf2c4b5deb4cd44742ec6fb00ca06d01fbcea5427e": {
+            "0x7cA1C28663b76CFDe424A9494555B94846205585": {
+                "Transfer 0": {
+                    "from": "0xFBc4C42159A5575a772BebA7E3BF91DB508E127a",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 53665995994125676421
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xb419ff9221039Bdca7bb92A131DD9CF7DEb9b8e5",
+                    "value": 53665995994125676421
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0xb419ff9221039Bdca7bb92A131DD9CF7DEb9b8e5",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 4846861961044784509
+                }
+            },
+            "0xb419ff9221039Bdca7bb92A131DD9CF7DEb9b8e5": {
+                "Sync 3": {
+                    "reserve0": 307893390380301944898340,
+                    "reserve1": 27886304192469986629581
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0xB4aFD3Ef0100a47320e6301e6fE3806b39E6DB61",
+                    "value": 425438518060863
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 6": {
+                    "reserve0": 116624009669619758247986,
+                    "reserve1": 10267173879909668336
+                }
+            },
+            "0xF4eB217Ba2454613b15dBdea6e5f22276410e89e": {
+                "Transfer 8": {
+                    "from": "0xB4aFD3Ef0100a47320e6301e6fE3806b39E6DB61",
+                    "to": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "value": 2755
+                }
+            },
+            "0xB4aFD3Ef0100a47320e6301e6fE3806b39E6DB61": {
+                "Sync 9": {
+                    "reserve0": 37900207952622903,
+                    "reserve1": 243471
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 11": {
+                    "from": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 417268517836456019119470
+                },
+                "Transfer 14": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xFBc4C42159A5575a772BebA7E3BF91DB508E127a",
+                    "value": 406105816757289803456889
+                },
+                "Transfer 15": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 11162701079166215662581
+                }
+            },
+            "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947": {
+                "Sync 12": {
+                    "reserve0": 2026736941858633544163700313,
+                    "reserve1": 13357448
+                }
+            },
+            "0xFBc4C42159A5575a772BebA7E3BF91DB508E127a": {
+                "Sync 16": {
+                    "reserve0": 3194134820959291050636,
+                    "reserve1": 24504517411489244010115707
+                }
+            }
+        }
+    },
+    "90675039": {
+        "0xbbfa205dc9a39a4a84e9c801dcae249cea201addd08b664ca52111241fdd827d": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "value": 1318089000000000000000000
+                },
+                "Transfer 22": {
+                    "from": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 1324728914915864614082255
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 15462539600537897723
+                },
+                "Transfer 9": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 15462539600537897723
+                }
+            },
+            "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d": {
+                "Sync 4": {
+                    "reserve0": 5124307845996255477694,
+                    "reserve1": 437261044746934542757038393
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 11": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 1357005247931245
+                },
+                "Transfer 15": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "value": 1357005247931245
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 12": {
+                    "reserve0": 116639472209220296145709,
+                    "reserve1": 10265816874661737091
+                }
+            },
+            "0xF4eB217Ba2454613b15dBdea6e5f22276410e89e": {
+                "Transfer 16": {
+                    "from": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 8754
+                },
+                "Transfer 20": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "value": 8754
+                }
+            },
+            "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d": {
+                "Sync 17": {
+                    "reserve0": 18603656113401206147,
+                    "reserve1": 120245577
+                }
+            },
+            "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947": {
+                "Sync 23": {
+                    "reserve0": 2025412212943717679549618058,
+                    "reserve1": 13366202
+                }
+            }
+        }
+    },
+    "90675042": {
+        "0xa834a6b5107ce2b141db82ea135fb9df9c4e0163a19ec10cff004cf83d3b0212": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x4C1e1F3639Ad8A9f6C17A351Cd115de2DD4281dC",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675045": {
+        "0xb28076317255ba8c236d32d0a4afc5a2d44099b4fbb61eba0024d3933b75817b": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x1A5EB30D8d401BbaBA591eD566137e63eec5047e",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 15529677
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x1A5EB30D8d401BbaBA591eD566137e63eec5047e",
+                    "value": 7973701985551741736020165
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434285160526,
+                    "reserve1": 223646382730533539558581820454
+                }
+            }
+        }
+    },
+    "90675052": {
+        "0x936dbd6ccd6a903a26647d48fcbafdbe43eb9fb42105d0acb01823b91a1a8f3d": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x1A5EB30D8d401BbaBA591eD566137e63eec5047e",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 7937587622837143000000000
+                }
+            }
+        }
+    },
+    "90675058": {
+        "0x1f2807ffaa74240b565b7c80cce0fcf426cec6f1ac43570d2794678f355cf00c": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x673949440ec99cF842B3b4C71f2866943BcA4607",
+                    "to": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "value": 2488000000000000000000
+                }
+            }
+        }
+    },
+    "90675070": {
+        "0x5f467c6e76757ff945f8dbe7ad06352521ada54887dd9c87fdf6c313f5c947a9": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x44da9A8A67e0427f6294DD8F47071b7BAcfC6579",
+                    "value": 9600000000000000
+                }
+            }
+        },
+        "0x7b02cb2de49cb0709b3ae6d40bea39a9351afb51dbafbf94fbbe1dddbe6c0660": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 350853773821983938735
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 350853773821983938735
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 946519345974859611715716,
+                    "reserve1": 80720007491474691400760131935
+                }
+            }
+        }
+    },
+    "90675078": {
+        "0xb317051f8994073f1b674c077fa5ee297d19dc34b408bbad3c38b0c1a3545df0": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30779638000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 359701205493664158834
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 946159644769365947556882,
+                    "reserve1": 80750787129474691400760131935
+                }
+            }
+        }
+    },
+    "90675081": {
+        "0xb7edd89a15916769faca00b1ecf7b8d5ee8f019831e74a9560a4c29e6501ae2d": {
+            "0xE619a456c7C296520Ee9cF5E691F0ED609F946E4": {
+                "Transfer 0": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x69943923B2b075E0539e97C23ABA1c7d3A5d57a0",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90675086": {
+        "0x9da6a5d5f6ba8b74b77336d0b37d371f02b0a4b2f686e4a9eb6ee84f2b3350a9": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 359701206000000000000
+                }
+            }
+        }
+    },
+    "90675093": {
+        "0x65638cc759b49ebb79c3e950f0e56b0c0d3f364a2473f0381b53b4abfeec5b84": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0xc5954019E49ea46B098216CfC0C4F8127b80b821",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675117": {
+        "0xf740f4a7c64dd3b2518a87b60c2c8e0cb8cf860dd6b5a48bf01720861b69b8e0": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0xFC8BfAC4DA721676029AfdF4A1cD4114c416dC04",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675125": {
+        "0x1dd155962256423743bcdbab43ea9cfa6ac068c629056f61056f6c6412d0451b": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 350326699083734004400
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 350326699083734004400
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 945809318070282213552482,
+                    "reserve1": 80780787129474691400760131921
+                }
+            }
+        }
+    },
+    "90675135": {
+        "0x62e77ee6c5222db29f21c6d8b01c563e20388844af654480697fe246c8efe220": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30779600000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 359160599504739560500
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 945450157470777473991982,
+                    "reserve1": 80811566729474691400760131921
+                }
+            }
+        }
+    },
+    "90675138": {
+        "0xca0072b9f27f51ecfab3fc2866b48d5dea9ebd9ad4e3a93e3d659618c539926c": {
+            "0x5ce9F0B6AFb36135b5ddBF11705cEB65E634A9dC": {
+                "Transfer 0": {
+                    "from": "0xd3a74DEC7C39B22f0869d4E3CC8BD98474b26344",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 29317019868773582367
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7",
+                    "value": 29317019868773582367
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 2": {
+                    "from": "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7",
+                    "to": "0xEfCF518CA36DC3362F539965807b42A77DC26Be0",
+                    "value": 334069308615019
+                }
+            },
+            "0x5433F7b36aB8bf29c2ef785BA4a14E6e7594BbB7": {
+                "Sync 3": {
+                    "reserve0": 6302965640250739720986,
+                    "reserve1": 71703736810364927
+                }
+            },
+            "0x12c87331f086c3C926248f964f8702C0842Fd77F": {
+                "Transfer 5": {
+                    "from": "0xEfCF518CA36DC3362F539965807b42A77DC26Be0",
+                    "to": "0xDB0363ee28a5B40BDc2f4701e399c63E00f91Aa8",
+                    "value": 138138301299526171729
+                }
+            },
+            "0xEfCF518CA36DC3362F539965807b42A77DC26Be0": {
+                "Sync 6": {
+                    "reserve0": 40873543526570228309114,
+                    "reserve1": 98884815258277252
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0xDB0363ee28a5B40BDc2f4701e399c63E00f91Aa8",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 3892788149590554703
+                }
+            },
+            "0xDB0363ee28a5B40BDc2f4701e399c63E00f91Aa8": {
+                "Sync 9": {
+                    "reserve0": 7655295548230660614646,
+                    "reserve1": 212473677698883907632
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 11": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 331733272679523365351961
+                },
+                "Transfer 14": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xd3a74DEC7C39B22f0869d4E3CC8BD98474b26344",
+                    "value": 321622457450100507189342
+                },
+                "Transfer 15": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 10110815229422858162619
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 12": {
+                    "reserve0": 945454050258927064546685,
+                    "reserve1": 80811234996202011877394779960
+                }
+            },
+            "0xd3a74DEC7C39B22f0869d4E3CC8BD98474b26344": {
+                "Sync 16": {
+                    "reserve0": 6129978413050579030312,
+                    "reserve1": 67368822819417115507413182
+                }
+            }
+        }
+    },
+    "90675140": {
+        "0xcfd6462746a0f2c072a529d613b3769b3dadb10abcdbe156315f8ddbd2f38631": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0xa7198ac22a51ed135D184397a5020CF2B3F6Cf4C",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675143": {
+        "0x14657a9c6f469aa4e1aa388c661939a5f09fb61edfb3b4bb53c3d6e79fded31a": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 359160599000000000000
+                }
+            }
+        }
+    },
+    "90675154": {
+        "0xf7ad787b42af0d2b878e47abc760d0c5e5cae7fe8524c7e55181e2cb98774216": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xCD627e1a5A2A12B9179De84D8D9bf90A5b1438ba",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90675160": {
+        "0x9cf75c5a5b3064ba4806b9a04da4a4857540175eb71b83cb5ec155e37c56f022": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 3": {
+                    "from": "0x8C14ea853321028a7bb5E4FB0d0147F183d3B677",
+                    "to": "0x6C78A66dC0eEE4738D473381B380ce63446b316C",
+                    "value": 30000000000000000000000000
+                }
+            }
+        }
+    },
+    "90675164": {
+        "0x4ffc1f98c42a597c0a09321f4a4000877d1452c7f7636ca30cb0bc46bef6a43b": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x340f81559Fd38ABd0B5b5E8a9586435567551318",
+                    "to": "0x69acb8f7C6B102eC58f22601475e04f42598A245",
+                    "value": 9600000000000000
+                }
+            }
+        }
+    },
+    "90675182": {
+        "0x8fe18850a74f368c3ab7a12c9397bab717b5c4afa5854f930112aea04d6dad2e": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x71032717c4f5cd6EaF3ec557EB84A5d019606dc7",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 12000000000000000000000
+                }
+            }
+        }
+    },
+    "90675191": {
+        "0x774faa271a0ebbb8d9efabf0ac280cfe1c985a73c9788907123e777e314e83d3": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 33606368
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 17253218305235780432140781
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434318766894,
+                    "reserve1": 223629129512228303778149679673
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 5": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 11562338207772309380677
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 6": {
+                    "reserve0": 93407401191913461119656707311,
+                    "reserve1": 62774238981452177843988638
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 200000000000000000000
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 9": {
+                    "reserve0": 117153752312875186303956,
+                    "reserve1": 6764100301364758187068439
+                }
+            }
+        }
+    },
+    "90675201": {
+        "0x0be0a74b87222eac87fd450aa6762f54df08c4022855ccb9cdbc40734efec8bf": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "value": 37918673
+                }
+            },
+            "0x7faA64Faf54750a2E3eE621166635fEAF406Ab22": {
+                "Transfer 2": {
+                    "from": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "to": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "value": 74053980338349957732155
+                }
+            },
+            "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435": {
+                "Sync 3": {
+                    "reserve0": 4252807457364071649109043,
+                    "reserve1": 2211175118
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 5": {
+                    "from": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 220000000000000000000
+                }
+            },
+            "0xddCcf2F096fa400ce90ba0568908233e6A950961": {
+                "Sync 6": {
+                    "reserve0": 2540187046886967807990539,
+                    "reserve1": 7341084776973668931593
+                }
+            }
+        }
+    },
+    "90675202": {
+        "0x2dc5a5fc57e06a7f55e7efd349f758a5d678364f56fd24f77404ec653eae6fc6": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xA07414a0cC8cC84B22d8e9D654392ACC1B6F05b0",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 13696295011280674355150848
+                },
+                "Transfer 10": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0xA07414a0cC8cC84B22d8e9D654392ACC1B6F05b0",
+                    "value": 14172505870656632117599941
+                },
+                "Transfer 13": {
+                    "from": "0xA07414a0cC8cC84B22d8e9D654392ACC1B6F05b0",
+                    "to": "0x9983B4113Bb1DFD327Ee2C81BF573C30557A6999",
+                    "value": 166673800781585216857182
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 1": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "value": 159732601020083817528
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 2": {
+                    "reserve0": 945294317657906980729157,
+                    "reserve1": 80824931291213292551749930808
+                }
+            },
+            "0x7faA64Faf54750a2E3eE621166635fEAF406Ab22": {
+                "Transfer 4": {
+                    "from": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "to": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "value": 53935358953943269112215
+                }
+            },
+            "0xddCcf2F096fa400ce90ba0568908233e6A950961": {
+                "Sync 5": {
+                    "reserve0": 2486251687933024538878324,
+                    "reserve1": 7500817377993752749121
+                }
+            },
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 7": {
+                    "from": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 27609544
+                }
+            },
+            "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435": {
+                "Sync 8": {
+                    "reserve0": 4306742816318014918221258,
+                    "reserve1": 2183565574
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 11": {
+                    "reserve0": 434346376438,
+                    "reserve1": 223614957006357647146032079732
+                }
+            }
+        }
+    },
+    "90675205": {
+        "0xeb255d6268b47e074db59cf98e5fca8259af042349290970f56c6f917034dedd": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 1766858
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3E8eC2ef14A4805Ab27F8b3c56Bea6E63c4B35AB",
+                    "value": 1766858
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x3E8eC2ef14A4805Ab27F8b3c56Bea6E63c4B35AB",
+                    "to": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "value": 10788251028970481723
+                }
+            },
+            "0x3E8eC2ef14A4805Ab27F8b3c56Bea6E63c4B35AB": {
+                "Sync 3": {
+                    "reserve0": 186724152,
+                    "reserve1": 1132728168755763234210
+                }
+            },
+            "0x7faA64Faf54750a2E3eE621166635fEAF406Ab22": {
+                "Transfer 5": {
+                    "from": "0xddCcf2F096fa400ce90ba0568908233e6A950961",
+                    "to": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "value": 3563650826349873826864
+                }
+            },
+            "0xddCcf2F096fa400ce90ba0568908233e6A950961": {
+                "Sync 6": {
+                    "reserve0": 2482688037106674665051460,
+                    "reserve1": 7511605629022723230844
+                }
+            },
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 8": {
+                    "from": "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435",
+                    "to": "0xBf560771B6002a58477EFBCDD6774A5a1947587B",
+                    "value": 1801708
+                }
+            },
+            "0x523faE29D7ff6FD38842c8F271eDf2ebd3150435": {
+                "Sync 9": {
+                    "reserve0": 4310306467144364792048122,
+                    "reserve1": 2181763866
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 11": {
+                    "from": "0xBf560771B6002a58477EFBCDD6774A5a1947587B",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 925268249901058008217160
+                },
+                "Transfer 14": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc",
+                    "value": 914148810655881174461172
+                },
+                "Transfer 15": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 11119439245176833755988
+                }
+            },
+            "0xBf560771B6002a58477EFBCDD6774A5a1947587B": {
+                "Sync 12": {
+                    "reserve0": 6178542580,
+                    "reserve1": 3178425920039684941595057639
+                }
+            },
+            "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc": {
+                "Sync 16": {
+                    "reserve0": 29101375669,
+                    "reserve1": 15012406154356519961734105428
+                }
+            }
+        }
+    },
+    "90675208": {
+        "0x20ddec6d4ab41de30221858d26b1f1c2c914b8ce87acaf3de9fe11039dd63a39": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 1068159
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x403eFd079c727927b3f91f9B67023d95B0332c44",
+                    "value": 1068159
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x403eFd079c727927b3f91f9B67023d95B0332c44",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 6587395337588710304
+                }
+            },
+            "0x403eFd079c727927b3f91f9B67023d95B0332c44": {
+                "Sync 3": {
+                    "reserve0": 59978187,
+                    "reserve1": 364211914490582621243
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x767655DA394a228b116ac93B73E3bC12a1e0C97b",
+                    "value": 578006071403248
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 6": {
+                    "reserve0": 116646059604557884856013,
+                    "reserve1": 10265238868590333843
+                }
+            },
+            "0x0017Be3E7e36ABF49FE67a78D08bf465bB755120": {
+                "Transfer 8": {
+                    "from": "0x767655DA394a228b116ac93B73E3bC12a1e0C97b",
+                    "to": "0xF7c803B09B681A3EBe54a4d64920587e3F1db90c",
+                    "value": 94272091530991877665
+                }
+            },
+            "0x767655DA394a228b116ac93B73E3bC12a1e0C97b": {
+                "Sync 9": {
+                    "reserve0": 136642027935011400137618,
+                    "reserve1": 836270422262264019
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 11": {
+                    "from": "0xF7c803B09B681A3EBe54a4d64920587e3F1db90c",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 563910475089348064590898
+                },
+                "Transfer 14": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc",
+                    "value": 552705600495324105462239
+                },
+                "Transfer 15": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 11204874594023959128659
+                }
+            },
+            "0xF7c803B09B681A3EBe54a4d64920587e3F1db90c": {
+                "Sync 12": {
+                    "reserve0": 69034558802477005282291,
+                    "reserve1": 413415923615437233536138663
+                }
+            },
+            "0xF3DE9dc38f62608179c45fE8943a0cA34Ba9CEfc": {
+                "Sync 16": {
+                    "reserve0": 29100307510,
+                    "reserve1": 15012958859957015285839567667
+                }
+            }
+        }
+    },
+    "90675212": {
+        "0x18a172fadbbd25f5caedb11d50e23ac208d95e9a2db6e865a74de98b179e5c3f": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 67593392
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 34689389965097737445403191
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434413969830,
+                    "reserve1": 223580267616392549408586676541
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 35428735512812712
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 6": {
+                    "reserve0": 121753806643000492634737571312,
+                    "reserve1": 124687416168815997679
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 400000000000000000000
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116246059604557884856013,
+                    "reserve1": 10300667604103146555
+                }
+            }
+        }
+    },
+    "90675214": {
+        "0x453c4396f328f17c383a1c023d00f7d288c9f7657a09b82c17a2a9f710719fc4": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0xc374776Cf5C497Adeef6b505588b00cB298531FD",
+                    "value": 8689485829256133909559145
+                },
+                "Transfer 10": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 8733957009686798355570868
+                }
+            },
+            "0x885f8CF6E45bdd3fdcDc644efdcd0AC93880c781": {
+                "Transfer 1": {
+                    "from": "0xc374776Cf5C497Adeef6b505588b00cB298531FD",
+                    "to": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "value": 1001640143899733389302
+                }
+            },
+            "0xc374776Cf5C497Adeef6b505588b00cB298531FD": {
+                "Sync 2": {
+                    "reserve0": 4610244040209322151099909,
+                    "reserve1": 39883756943228561775580605036
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 4": {
+                    "from": "0xFE28a27a95e51BB2604aBD65375411A059371616",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 101644356641065984088
+                }
+            },
+            "0xFE28a27a95e51BB2604aBD65375411A059371616": {
+                "Sync 5": {
+                    "reserve0": 253680687143648034674300,
+                    "reserve1": 25718499173075886252201
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 7": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 8971955764523665
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 8": {
+                    "reserve0": 116347703961198950840101,
+                    "reserve1": 10291695648338622890
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 11": {
+                    "reserve0": 121745072685990805836382000444,
+                    "reserve1": 124696388124580521344
+                }
+            }
+        },
+        "0xc2fae8dd516c41b1148217148ca5d84db84420f6f7d8a4d9e03ce9860828441d": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 3738557800000000000000000
+                },
+                "Transfer 12": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 3783800703898275123890587
+                }
+            },
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 1": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0xE4A75db19e979C9206a001CfcB3756461b8b4A58",
+                    "value": 7242063
+                },
+                "Transfer 6": {
+                    "from": "0xE4A75db19e979C9206a001CfcB3756461b8b4A58",
+                    "to": "0x6985436a0E5247A3E1dc29cdA9e1D89C5b59e26b",
+                    "value": 7242063
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 2": {
+                    "reserve0": 434406727767,
+                    "reserve1": 223584006174192549408586676541
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x6985436a0E5247A3E1dc29cdA9e1D89C5b59e26b",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 44094951399515511914
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 9": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 3887309092504652
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 10": {
+                    "reserve0": 116391798912598466352015,
+                    "reserve1": 10287808339246118238
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 13": {
+                    "reserve0": 121741288885286907561258109857,
+                    "reserve1": 124700275433673025996
+                }
+            }
+        }
+    },
+    "90675217": {
+        "0xc01cb4b3215411ebe18303dd32f0dc4d0656a44bc44d42087ea13ed2d432e84b": {
+            "0x0017Be3E7e36ABF49FE67a78D08bf465bB755120": {
+                "Transfer 0": {
+                    "from": "0x767655DA394a228b116ac93B73E3bC12a1e0C97b",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 346328961321293710579
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x9d83d87AA9F7F8176c3e1b710537A154d5f92545",
+                    "value": 346328961321293710579
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x9d83d87AA9F7F8176c3e1b710537A154d5f92545",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 24408399679580719967
+                }
+            },
+            "0x9d83d87AA9F7F8176c3e1b710537A154d5f92545": {
+                "Sync 3": {
+                    "reserve0": 51718605060278376264333,
+                    "reserve1": 3629663793944694433790
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 2150523318105234
+                },
+                "Transfer 8": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x767655DA394a228b116ac93B73E3bC12a1e0C97b",
+                    "value": 2130298646764828
+                },
+                "Transfer 9": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 20224671340406
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 6": {
+                    "reserve0": 116416207312278047071982,
+                    "reserve1": 10285657815928013004
+                }
+            },
+            "0x767655DA394a228b116ac93B73E3bC12a1e0C97b": {
+                "Sync 10": {
+                    "reserve0": 136295698973690106427039,
+                    "reserve1": 838400720909028847
+                }
+            }
+        }
+    },
+    "90675222": {
+        "0x4dd1ea5cc172ceb06b03a112887ae11ea27b6d2df609d3d99252decff45b1a36": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x6C78A66dC0eEE4738D473381B380ce63446b316C",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 30000000000000000000000000
+                }
+            }
+        },
+        "0x03aab53f4a34d7ad1eadc431af56a675570e7b0ba5c7538f4d53b85869db1928": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 349685344620428815506
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 349685344620428815506
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 944944632313286551913651,
+                    "reserve1": 80854931291213292551749930794
+                }
+            }
+        }
+    },
+    "90675223": {
+        "0x78def9597baf6bc81be368e734bb74734ac7febc74bd79967ba719914ea56a43": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0xCD627e1a5A2A12B9179De84D8D9bf90A5b1438ba",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90675235": {
+        "0x8c3525d3f7b6bb8b997ed08b38b90f68992e48090ea747d535fa5b5983332690": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 2488000000000000000000
+                }
+            }
+        }
+    },
+    "90675238": {
+        "0x61c9c3c75fcaed6b97c5be235eafe98dfe724047075f6a8ecf141a7c1ee064c4": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 349426338746623809979
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 349426338746623809979
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 944595205974539928103672,
+                    "reserve1": 80884931291213292551749930780
+                }
+            }
+        }
+    },
+    "90675245": {
+        "0xd1164180195d893e23468ee0339622811c3caac2b819ed91be3168d53fcefad2": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30927258000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 359955790389812262761
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 944235250184150115840911,
+                    "reserve1": 80915858549213292551749930780
+                }
+            }
+        }
+    },
+    "90675252": {
+        "0x1fc6a4ddfbf899d75d468265c0a01ed099cb7983f95cfa37e4d14f984986b98c": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0xEF00178853100870990BE5Cd18A1dbF153426c0f",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 41018794
+                },
+                "Transfer 4": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x8fA7dF05e9422115088515eC2AF03aB8883bdABb",
+                    "value": 41018794
+                },
+                "Transfer 14": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 41113184
+                },
+                "Transfer 17": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0xEF00178853100870990BE5Cd18A1dbF153426c0f",
+                    "value": 41113184
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x8fA7dF05e9422115088515eC2AF03aB8883bdABb",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 248505840508218305350
+                },
+                "Transfer 8": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 248505840508220534414
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 9": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 21226151265690125232548480
+                },
+                "Transfer 13": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 21226151265690125232548480
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 10": {
+                    "reserve0": 944483756024658336375325,
+                    "reserve1": 80894632397947602426517382300
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 15": {
+                    "reserve0": 434365614583,
+                    "reserve1": 223605232325458239533819225021
+                }
+            }
+        }
+    },
+    "90675253": {
+        "0xf6859bb617431781d8185f16efc8fc04c102b334cdb0522853cb17775d1a496b": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 359955790000000000000
+                }
+            }
+        }
+    },
+    "90675255": {
+        "0xaffe20043d9e17963fda7370f96226823266e5c073623fa45436f5e48b4ff465": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 46812594
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 24023579790391418858557328
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 3": {
+                    "reserve0": 434412427177,
+                    "reserve1": 223581208745667848114960667693
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 5": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 16092432675649775183182
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 6": {
+                    "reserve0": 93431424771703852538515264639,
+                    "reserve1": 62758146548776528068805456
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 277226100000000000000
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 9": {
+                    "reserve0": 116876526212875186303956,
+                    "reserve1": 6780192734040407962251621
+                }
+            }
+        }
+    },
+    "90675268": {
+        "0x142b3e00e04353ffdb7fc5f1f44e7d53d8d809140e983a515c7bb15d09e2d7fd": {
+            "0x4988a896b1227218e4A686fdE5EabdcAbd91571f": {
+                "Transfer 0": {
+                    "from": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "to": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "value": 46895399
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 2": {
+                    "from": "0x03B666f3488a7992b2385B12dF7f35156d7b29cD",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 24118712177891170670120057
+                }
+            },
+            "0x03B666f3488a7992b2385B12dF7f35156d7b29cD": {
+                "Sync 3": {
+                    "reserve0": 447018983326,
+                    "reserve1": 230573359014900239592538989109
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 5": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 24625951348062313
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 6": {
+                    "reserve0": 121765407597464798731928229914,
+                    "reserve1": 124675649482324963683
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x2B8cD75D3E679531918FEeBb9f095a17c982baCa",
+                    "value": 277226100000000000000
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 9": {
+                    "reserve0": 116138981212278047071982,
+                    "reserve1": 10310283767276075317
+                }
+            }
+        }
+    },
+    "90675270": {
+        "0xaf7cd409a7093e47ca353af1ed6dc962138b72431706cc1d4c7cf590af179d57": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 13341374872400919440171186
+                },
+                "Transfer 7": {
+                    "from": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 13362821445360891785635901
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 1": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 155274138547268677233
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 2": {
+                    "reserve0": 944328481886111067698092,
+                    "reserve1": 80907973772820003345957553486
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 4": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198",
+                    "value": 13724874521019338
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 5": {
+                    "reserve0": 116294255350825315749215,
+                    "reserve1": 10296558892755055979
+                }
+            },
+            "0x63da4DB6Ef4e7C62168aB03982399F9588fCd198": {
+                "Sync 8": {
+                    "reserve0": 121752044776019437840142594013,
+                    "reserve1": 124689374356845983021
+                }
+            }
+        }
+    },
+    "90675271": {
+        "0x8bed91519e47465f2b7aaccb256ef8cd9ba906e47bbbced8554d5f0779ec4700": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x84567E7511E0d97DE676d236AEa7aE688221799e",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 15022539654027825321
+                },
+                "Transfer 1": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 15022539654027825321
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 2": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "value": 1325917290749555
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 3": {
+                    "reserve0": 116309277890479343574536,
+                    "reserve1": 10295232975464306424
+                }
+            },
+            "0xF4eB217Ba2454613b15dBdea6e5f22276410e89e": {
+                "Transfer 5": {
+                    "from": "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d",
+                    "to": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "value": 8552
+                }
+            },
+            "0xf56997948d4235514Dcc50fC0EA7C0e110EC255d": {
+                "Sync 6": {
+                    "reserve0": 18604982030691955702,
+                    "reserve1": 120237025
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 8": {
+                    "from": "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947",
+                    "to": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "value": 1292487675011718170573074
+                },
+                "Transfer 11": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x84567E7511E0d97DE676d236AEa7aE688221799e",
+                    "value": 1284362914644844203896909
+                },
+                "Transfer 12": {
+                    "from": "0xF8D50960Ab094eA69798127FF345eAff95215B40",
+                    "to": "0x3d5EEe5f9ad8Ee46A63d7755f9a63684dB72C9c2",
+                    "value": 8124760366873966676165
+                }
+            },
+            "0xbF58062D23f869a90c6Eb04B9655f0dfCA345947": {
+                "Sync 9": {
+                    "reserve0": 2024119725268705961379044984,
+                    "reserve1": 13374754
+                }
+            },
+            "0x84567E7511E0d97DE676d236AEa7aE688221799e": {
+                "Sync 13": {
+                    "reserve0": 1829942248895904833883,
+                    "reserve1": 157267244937801455416562357
+                }
+            }
+        }
+    },
+    "90675278": {
+        "0xef31f8776e80c913b336af766da7bc7015c143535610813a37ac1f3c7b99bf7e": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "value": 1318089000000000000000000
+                },
+                "Transfer 22": {
+                    "from": "0xFd3fDA44cd7F1EA9e9856B56d21F64FC1A417b8E",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 1321335854082404915294552
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 15369690930036699134
+                },
+                "Transfer 9": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "value": 15369690930036699134
+                }
+            },
+            "0x7E9EA10E5984a09D19D05F31ca3cB65BB7df359d": {
+                "Sync 4": {
+                    "reserve0": 5108938155066218778560,
+                    "reserve1": 438579133746934542757038393
+                }
+            },
+            "0xC9BdeEd33CD01541e1eeD10f90519d2C06Fe3feB": {
+                "Transfer 11": {
+                    "from": "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 1356203616794413
+                },
+                "Transfer 15": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0x58826b9854594512B3741Be3226A6b76E32957C5",
+                    "value": 1356203616794413
+                }
+            },
+            "0x5eeC60F348cB1D661E4A5122CF4638c7DB7A886e": {
+                "Sync 12": {
+                    "reserve0": 116324647581409380273670,
+                    "reserve1": 10293876771847512011
+                }
+            },
+            "0x2451dB68DeD81900C4F16ae1af597E9658689734": {
+                "Transfer 16": {
+                    "from": "0x58826b9854594512B3741Be3226A6b76E32957C5",
+                    "to": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "value": 245544656380377950
+                },
+                "Transfer 20": {
+                    "from": "0x216b6335446d74bF179FE87c5F48a4C314cF9C52",
+                    "to": "0xFd3fDA44cd7F1EA9e9856B56d21F64FC1A417b8E",
+                    "value": 245544656380377950
+                }
+            },
+            "0x58826b9854594512B3741Be3226A6b76E32957C5": {
+                "Sync 17": {
+                    "reserve0": 493534616594690126120,
+                    "reserve1": 2719091712831375400
+                }
+            },
+            "0xFd3fDA44cd7F1EA9e9856B56d21F64FC1A417b8E": {
+                "Sync 23": {
+                    "reserve0": 768303034378368292537,
+                    "reserve1": 4145541837927972023050214586
+                }
+            }
+        }
+    },
+    "90675286": {
+        "0x23d662630c95dbbbb0ea3871b3738c791e42d0e212874400d529b68eb20ee962": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 348969649027302291881
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 348969649027302291881
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 943979512237083765406211,
+                    "reserve1": 80937973772820003345957553472
+                }
+            }
+        }
+    },
+    "90675301": {
+        "0xddec3ddf82a38b965af908cc8ee8372e3e1e5c9e2f17daf31f142436204524d7": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 348711438355378520477
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 348711438355378520477
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 943630800798728386885734,
+                    "reserve1": 80967973772820003345957553458
+                }
+            }
+        },
+        "0xc26980824ced5f0d1f91f94a1ba99f6e75d169378256a2820575b5ad39698f20": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 31352157000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 364152915422059249713
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 943266647883306327636021,
+                    "reserve1": 80999325929820003345957553458
+                }
+            }
+        }
+    },
+    "90675304": {
+        "0xb0a99c24fdea9a78bf973b649a29fdd95d501844fcbcd35399a4334c3cdcdd97": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x673949440ec99cF842B3b4C71f2866943BcA4607",
+                    "to": "0xc853c137706Ad41D0da14161067Ee369CE1eA039",
+                    "value": 2461000000000000000000
+                }
+            }
+        }
+    },
+    "90675309": {
+        "0x25ff5f42b83079a7d269df8d7bfdc7debe52f4af9b90146e062c2bb703b99e8a": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 364152916000000000000
+                }
+            }
+        }
+    },
+    "90675316": {
+        "0x7effa378aad6a63ab6049df10dc50be236e5e81799fb76f28e33ced00abacba4": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 348184270954069753664
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 348184270954069753664
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 942918463612352257882357,
+                    "reserve1": 81029325929820003345957553444
+                }
+            }
+        }
+    },
+    "90675348": {
+        "0x32437c4de9c28a6d6849b86c603c8e6526424fcb7d0ecef10cab5fe010e162c6": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 347926931744865778638
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 347926931744865778638
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 942570536680607392103719,
+                    "reserve1": 81059325929820003345957553430
+                }
+            }
+        }
+    },
+    "90675353": {
+        "0x240228631303b80ed70341a26ddf76d7fa12135c25f979b520280039931f3bc1": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x950A4aA3c42E42C38CA27568B8e9366CD6a17c94",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 68600000000000000000000000
+                }
+            }
+        }
+    },
+    "90675355": {
+        "0x80fc41fb8eb099216cf8a52a12168649da53262e4df904be3fc12f7955656ae1": {
+            "0xB12BFcA5A55806AaF64E99521918A4bf0fC40802": {
+                "Transfer 0": {
+                    "from": "0xEF00178853100870990BE5Cd18A1dbF153426c0f",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 41020933
+                },
+                "Transfer 4": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x8fA7dF05e9422115088515eC2AF03aB8883bdABb",
+                    "value": 41020933
+                },
+                "Transfer 14": {
+                    "from": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 41114172
+                },
+                "Transfer 17": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0xEF00178853100870990BE5Cd18A1dbF153426c0f",
+                    "value": 41114172
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x8fA7dF05e9422115088515eC2AF03aB8883bdABb",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 247628148819867527085
+                },
+                "Transfer 8": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 247628148819867527085
+                }
+            },
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 9": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "value": 21226117216660529257214055
+                },
+                "Transfer 13": {
+                    "from": "0xBD8f18e781e9503f41C67A98515A4AE28ff43C47",
+                    "to": "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0",
+                    "value": 21226117216660529257214055
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 10": {
+                    "reserve0": 942818164829427259630804,
+                    "reserve1": 81038099812603342816700339375
+                }
+            },
+            "0x20F8AeFB5697B77E0BB835A8518BE70775cdA1b0": {
+                "Sync 15": {
+                    "reserve0": 434371313005,
+                    "reserve1": 223602434862884508644217881748
+                }
+            }
+        }
+    },
+    "90675358": {
+        "0x3c85d9128ed4b90bf4d8e7dc0270f0abbccb99564dea09abeaf8ba5bc8e31626": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 30780147000000000000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 2": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "value": 356894710187548212306
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 3": {
+                    "reserve0": 942461270119239711418498,
+                    "reserve1": 81068879959603342816700339375
+                }
+            }
+        }
+    },
+    "90675367": {
+        "0x84d91aea34bd0b3dced1a6a337e986f5b3abe6b9b94feea6035c3b6ce444fe9e": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0x302eAb8e588C39cEe016D43154A04A34fD97346d",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 356894710000000000000
+                }
+            }
+        }
+    },
+    "90675390": {
+        "0xe4fe58696ad5b207602966adcb74fff273c93beb846bbf29e0f64ab0d7e63790": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 3": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 20084200250927846222930
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 4": {
+                    "reserve0": 93461424771703852538515264625,
+                    "reserve1": 62738062348525600222582526
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 6": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 344155127986172256443
+                },
+                "Transfer 9": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 344155127986172256443
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 7": {
+                    "reserve0": 116532371084889014047513,
+                    "reserve1": 6800276934291335808474551
+                }
+            }
+        }
+    },
+    "90675393": {
+        "0xa8e98cc078ef109f360dbbf7ec11fe294a420818fa948ac4c39af4e3615fed76": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "value": 7460430600000000000000000
+                },
+                "Transfer 2": {
+                    "from": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "to": "0x6BB0c4d909a84d118B5e6c4b17117e79E621ae94",
+                    "value": 7460430600000000000000000
+                },
+                "Transfer 13": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 7507137086457123931746523
+                }
+            },
+            "0x6BB0c4d909a84d118B5e6c4b17117e79E621ae94": {
+                "Transfer 4": {
+                    "from": "0x0000000000000000000000000000000000000000",
+                    "to": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "value": 7460430600000000000
+                },
+                "Transfer 8": {
+                    "from": "0x75c740815BcF1C91E66e3a30cCA265264985A191",
+                    "to": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "value": 7460430600000000000
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 9": {
+                    "from": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 86948191020044275905
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 10": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 5054902435912206238568
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 11": {
+                    "reserve0": 116619319275909058323418,
+                    "reserve1": 6795222031855423602235983
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 14": {
+                    "reserve0": 93453917634617395414583518102,
+                    "reserve1": 62743117250961512428821094
+                }
+            }
+        },
+        "0x437e9c91d7c2fae652e45ca2c278a94885431dc087fc2c4a82d4f0a995ff2dab": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 0": {
+                    "from": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "to": "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7",
+                    "value": 9239406700000000000000000
+                },
+                "Transfer 12": {
+                    "from": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "to": "0xD5C4d3996b3fdDAA00aa553C1ebbBeDe6B4236E0",
+                    "value": 9301753729566493457121718
+                }
+            },
+            "0x09C9D464b58d96837f8d8b6f4d9fE4aD408d3A4f": {
+                "Transfer 1": {
+                    "from": "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7",
+                    "to": "0x0FA60315ea699f021602A7a83a967064ec781a68",
+                    "value": 36287203709546925277145
+                },
+                "Transfer 6": {
+                    "from": "0x0FA60315ea699f021602A7a83a967064ec781a68",
+                    "to": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "value": 36287203709546925277145
+                }
+            },
+            "0x044b6B0CD3Bb13D2b9057781Df4459C66781dCe7": {
+                "Sync 2": {
+                    "reserve0": 222129700164021059821135476,
+                    "reserve1": 56397976781528771251538805952
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 8": {
+                    "from": "0x364d44dFc31b3d7b607797B514348d57Ad0D784E",
+                    "to": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "value": 107932872322239210751
+                }
+            },
+            "0xFa94348467f64D5A457F75F8bc40495D33c65aBB": {
+                "Transfer 9": {
+                    "from": "0xd1654a7713617d41A8C9530Fb9B948d00e162194",
+                    "to": "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD",
+                    "value": 6264428943760840295911
+                }
+            },
+            "0xd1654a7713617d41A8C9530Fb9B948d00e162194": {
+                "Sync 10": {
+                    "reserve0": 116727252148231297534169,
+                    "reserve1": 6788957602911662761940072
+                }
+            },
+            "0x84b123875F0F36B966d0B6Ca14b31121bd9676AD": {
+                "Sync 13": {
+                    "reserve0": 93444615880887828921126396384,
+                    "reserve1": 62749381679905273269117005
+                }
+            }
+        }
+    },
+    "90675395": {
+        "0x52b3b2056aba460054644cbb98ad1ce332d57c78ad263f826d90b7c03e274742": {
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 0": {
+                    "from": "0xCD627e1a5A2A12B9179De84D8D9bf90A5b1438ba",
+                    "to": "0x14122052dcc241A94d547A363392033640165663",
+                    "value": 1000000000000000000000
+                }
+            }
+        }
+    },
+    "90675405": {
+        "0xc25b806005153c502342ecc25378b8700b18dc392b767a9be590e88439589eca": {
+            "0xC42C30aC6Cc15faC9bD938618BcaA1a1FaE8501d": {
+                "Transfer 1": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "value": 29999999999999999999999986
+                }
+            },
+            "0x8BEc47865aDe3B172A928df8f990Bc7f2A3b9f79": {
+                "Transfer 3": {
+                    "from": "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008",
+                    "to": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "value": 347588621276690788395
+                },
+                "Transfer 6": {
+                    "from": "0xC91c504dD97fb120C9CFbE49a30465bf992b6042",
+                    "to": "0x0000000000000000000000000000000000000000",
+                    "value": 347588621276690788395
+                }
+            },
+            "0x1e0e812FBcd3EB75D8562AD6F310Ed94D258D008": {
+                "Sync 4": {
+                    "reserve0": 942113681497963020630103,
+                    "reserve1": 81098879959603342816700339361
                 }
             }
         }
