@@ -1,0 +1,58 @@
+{
+  "RPCSETTINGS": {
+    "APIURL": "https://rpc.ankr.com/fantom",
+    "MAXCHUNKSIZE": 3000,
+    "SUCCESSCOUNT": 5,
+    "CHANGEFACTOR": 9,
+    "MAXTRIES": 9
+  },
+  "FILESETTINGS": {
+    "SAVEINTERVAL": 600,
+    "FILENAME": "ftmScan"
+  },
+  "SCANSETTINGS": {
+    "STARTBLOCK": 62056523,
+    "ENDBLOCK": "latest",
+    "CONTRACTS": [],
+    "ABI": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint112",
+            "name": "reserve0",
+            "type": "uint112"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint112",
+            "name": "reserve1",
+            "type": "uint112"
+          }
+        ],
+        "name": "Sync",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "reserve0",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "reserve1",
+            "type": "uint256"
+          }
+        ],
+        "name": "Sync",
+        "type": "event"
+      }
+    ]
+  }
+}
