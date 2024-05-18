@@ -1,0 +1,137 @@
+{
+  "RPCSETTINGS": {
+    "APIURL": "wss://base.gateway.tenderly.co",
+    "TIMEOUT": 5,
+    "MAXCHUNKSIZE": 30000,
+    "STARTCHUNKSIZE": 500,
+    "SUCCESSCOUNT": 50,
+    "CHANGEFACTOR": 9,
+    "THROTTLEAMOUNT": 100,
+    "THROTTLEFACTOR": 1.2,
+    "EVENTSTARGET": 1400
+  },
+  "FILESETTINGS": {
+    "SAVEINTERVAL": 600,
+    "FILENAME": "basescan",
+    "MAXENTRIES": 10000
+  },
+  "SCANSETTINGS": {
+    "STARTBLOCK": 9550996,
+    "ENDBLOCK": "latest",
+    "FORCENEW": false,
+    "CONTRACTS": {
+      "0x78b3C724A2F663D11373C4a1978689271895256f": "TOKEN",
+      "0x1a9f461a371559f82976fa18c46a6a0d29f131d0": "AEROPAIR",
+      "0xd88b9f7185f404015b665e070a5ef03a7e26661f": "AEROPAIR"
+    },
+    "MODE": "ANYEVENT",
+    "EVENTS": [
+      "Approval",
+      "Burn",
+      "Transfer",
+      "Sync"
+    ],
+    "ABI": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Approval",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount0",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount1",
+            "type": "uint256"
+          }
+        ],
+        "name": "Burn",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Transfer",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "reserve0",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "reserve1",
+            "type": "uint256"
+          }
+        ],
+        "name": "Sync",
+        "type": "event"
+      }
+    ]
+  }
+}

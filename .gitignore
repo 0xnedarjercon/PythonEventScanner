@@ -1,3 +1,5 @@
 .env
-*/output/
+*/output/*
 *.pyc
+./settings
+!./settings/example

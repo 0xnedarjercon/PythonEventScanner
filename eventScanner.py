@@ -4,32 +4,37 @@ from web3._utils.events import get_event_data
 import sys
 import json
 from tqdm import tqdm
+import os
+
+directory = os.path.dirname(os.path.abspath(__file__))
+print(directory)
 
 
-def scan(
-    w3,
-    contracts,
-    eventSigs,
-    abi,
-    fileString,
-    saveInterval,
-    startBlock,
-    endBlock,
-    maxChunk,
-    folder,
-):
-    es = EventScanner(w3, contracts, eventSigs, abi, fileString, saveInterval, folder)
+from fileHandler import FileHandler
+
+import asyncio
+
+
+class Mode:
+    MULTICONTRACT = 0
+    MULTIEVENT = 1
+
+
+def scan():
+    es = EventScanner()
     try:
-        es.scan(startBlock, endBlock, maxChunk)
+        es.scan()
     except KeyboardInterrupt:
         print("keyboard interrupt detected, saving...")
         es.saveState()
     return es.latestBlock
 
 
-def getW3(apiURL):
+def getW3(cfg):
+    apiURL = cfg["APIURL"]
+    timeout = cfg["TIMEOUT"]
     if apiURL[0:3] == "wss":
-        provider = Web3.WebsocketProvider(apiURL)
+        provider = Web3.WebsocketProvider(apiURL, websocket_timeout=5)
         webSocket = True
     elif apiURL[0:4] == "http":
         provider = Web3.HTTPProvider(apiURL)
@@ -45,25 +50,42 @@ def getW3(apiURL):
     return w3, webSocket
 
 
+def getFileString(fileSettings, scanSettings):
+    if fileSettings["FILESTRING"] == "":
+        startBlock = scanSettings["STARTBLOCK"]
+        endBlock = scanSettings["ENDBLOCK"]
+        if scanSettings["MODE"] == "ANYEVENT":
+            contracts = scanSettings["CONTRACTS"]
+            fileString = f"Block {startBlock} to {endBlock} contracts {','.join(scanSettings['CONTRACTS'])}"
+        elif scanSettings["MODE"] == "ANYCONTRACT":
+            eventNames, eventSigs, abiLookups, topicCounts = abiToSig(abi)
+            fileString = (
+                f"Block {startBlock} to {endBlock} events {','.join(eventNames)}"
+            )
+    return fileString
+
+
 def getScanParameters(configPath):
-    (
-        apiURL,
-        maxChunk,
-        startBlock,
-        endBlock,
-        abi,
-        contracts,
-        saveInterval,
-        fileString,
-    ) = readConfig(configPath)
-    w3, websocket = getW3(apiURL)
-    eventNames, eventSigs, abiLookups, topicCounts = abiToSig(abi)
-    if fileString == "":
-        fileString = f"Block {startBlock} to {endBlock} events {','.join(eventNames)} contracts {','.join(contracts)}"
-    if endBlock == "latest":
+    rpcSettings, scanSettings, fileSettings = readConfig(configPath)
+    startBlock = scanSettings["STARTBLOCK"]
+    endBlock = scanSettings["ENDBLOCK"]
+    w3, websocket = getW3(rpcSettings)
+    if fileSettings["FILENAME"] == "":
+        if scanSettings["MODE"] == "ANYEVENT":
+            contracts = scanSettings["CONTRACTS"]
+            fileString = f"Block {startBlock} to {endBlock} contracts {','.join(scanSettings['CONTRACTS'])}"
+        elif scanSettings["MODE"] == "ANYCONTRACT":
+            eventNames, eventSigs, abiLookups, topicCounts = abiToSig(
+                scanSettings["ABI"]
+            )
+            fileString = (
+                f"Block {startBlock} to {endBlock} events {','.join(eventNames)}"
+            )
+    if scanSettings["ENDBLOCK"] == "latest":
         endBlock = w3.eth.block_number
     return (
         w3,
+        websocket,
         contracts,
         eventSigs,
         abi,
@@ -74,16 +96,108 @@ def getScanParameters(configPath):
         maxChunk,
         abiLookups,
         topicCounts,
-        websocket,
+        scanSettings,
     )
 
 
+def calcSigniature(event):
+    eventName = event["name"]
+    inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
+    eventSig = Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
+    # abiLookup = abi[x]
+    topicCount = sum(1 for inp in event["inputs"] if inp["indexed"]) + 1
+    return eventSig, topicCount
+
+
+def processContracts(folder, inContracts):
+    contracts = {}
+    for contract, abiFile in inContracts.items():
+        checksumAddress = Web3.to_checksum_address(contract)
+        contracts[checksumAddress] = {}
+        with open(f"{folder}ABIs/{abiFile}.json") as f:
+            abi = json.load(f)
+            for entry in abi:
+                if entry["type"] == "event":
+                    eventSig, topicCount = calcSigniature(entry)
+                    contracts[checksumAddress][eventSig] = {
+                        "abi": entry,
+                        "topicCount": topicCount,
+                    }
+    return contracts
+
+
 class EventScanner:
-    def __init__(
-        self, w3, contracts, eventSigs, abis, fileString, saveinterval, folder
+
+    def __init__(self):
+        folderPath = os.getenv("FOLDER_PATH")
+        self.configPath = f"{directory}/settings/{folderPath}/"
+        rpcSettings, scanSettings, fileSettings = readConfig(self.configPath)
+        self.loadRPCSettings(rpcSettings)
+        self.loadScanSettings(scanSettings)
+        self.loadFileSettings(fileSettings)
+
+    def loadScanSettings(self, scanSettings):
+        self.startBlock = scanSettings["STARTBLOCK"]
+        if scanSettings["ENDBLOCK"] == "latest":
+            self.endBlock = self.w3.eth.get_block_number()
+        else:
+            self.endBlock = scanSettings["ENDBLOCK"]
+        self.mode = scanSettings["MODE"]
+        self.events = scanSettings["EVENTS"]
+        self.contracts = processContracts(self.configPath, scanSettings["CONTRACTS"])
+        self.abis = scanSettings["ABI"]
+        self.forceNew = scanSettings["FORCENEW"]
+
+    def loadRPCSettings(self, rpcSettings):
+        self.w3, self.websocket = getW3(rpcSettings)
+        self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
+        self.startChunkSize = rpcSettings["STARTCHUNKSIZE"]
+        self.throttleFactor = rpcSettings["THROTTLEFACTOR"]
+        self.throttleAmount = rpcSettings["THROTTLEAMOUNT"]
+        self.eventsTarget = rpcSettings["EVENTSTARGET"]
+
+    def loadFileSettings(self, fileSettings):
+        filePath = self.configPath + self.getFileString(fileSettings)
+        self.fileHandler = FileHandler(
+            filePath, fileSettings["MAXENTRIES"], fileSettings["SAVEINTERVAL"]
+        )
+
+    def getFileString(self, fileSettings):
+        if fileSettings["FILENAME"] == "":
+            startBlock = self.startBlock
+            endBlock = self.endBlock
+            if self.mode == "ANYEVENT":
+                contracts = list(self.contracts.keys())
+                fileString = (
+                    f"Block {startBlock} to {endBlock} contracts {','.join(contracts)}"
+                )
+            elif self.mode == "ANYCONTRACT":
+                fileString = (
+                    f"Block {startBlock} to {endBlock} events {','.join(self.events)}"
+                )
+        else:
+            fileString = fileSettings["FILENAME"]
+        return fileString
+
+    def initFromParams(
+        self,
+        w3,
+        contracts,
+        eventSigs,
+        abis,
+        fileString,
+        saveinterval,
+        folder,
+        throttleAmount,
+        mode=Mode.MULTICONTRACT,
+        forceNew=False,
     ):
+
         self.w3 = w3
-        self.contracts = contracts
+        self.throttleAmount = throttleAmount
+        self.contracts = {}
+        self.forceNew = forceNew
+        self.contracts = processContracts(folder, contracts)
         # self.state = state
         self.eventSigs = eventSigs
         self.abis = abis
@@ -91,6 +205,7 @@ class EventScanner:
         self.topicCounts = {}
         self.latestBlock = 0
         self.saveInterval = saveinterval
+        self.mode = mode
         for x in range(len(abis)):
             self.abiLookups[eventSigs[x]] = abis[x]
             self.topicCounts[eventSigs[x]] = (
@@ -98,79 +213,75 @@ class EventScanner:
             )
         self.fileString = folder + "output/" + fileString + ".json"
         self.backupFile = folder + "output/" + fileString + "bkup.json"
-        try:
-            with open(self.fileString, "r") as f:
-                self.log = json.load(f)
-                self.latestBlock = self.log["latest"]
-                print(
-                    f"existing file found: {self.fileString}, continuing from {self.log['latest']}"
-                )
+        if not self.forceNew:
+            self.initLog()
+        else:
+            self.log = {"latest": 0}
+            self.latestBlock = 0
 
-        except (json.JSONDecodeError, FileNotFoundError):
-            try:
-                with open(self.backupFile, "r") as f:
-                    self.log = json.load(f)
-                    self.latestBlock = self.log["latest"]
-                    print(
-                        f"backup file found: {self.backupFile}, continuing from {self.log['latest']}"
-                    )
-            except:
-                print(f"no file found at: {self.fileString}, scanning from beginning")
-                self.log = {"latest": 0}
+    def updateConfig(self, args):
+        with open(self.configPath) as f:
+            cfg = json.load(f)
+        tmp = cfg
+        for i in range(len(args)):
+            if i < len(args) - 1:
+                tmp = tmp[args[i]]
+            else:
+                tmp = args[i]
+        with open(self.configPath) as f:
+            f.write(json.dump(cfg, indent=4))
 
     def scanChunk(self, start, end):
         allEvents = []
         filterParams = {
             "fromBlock": start,
             "toBlock": end,
-            "topics": [self.eventSigs],
+            "topics": [],
+            "address": list(self.contracts.keys()),
         }
         logs = self.w3.eth.get_logs(filterParams)
-        for log in logs:
-            if self.topicCounts[log["topics"][0].hex()] == len(log["topics"]):
+        if self.mode == "ANYEVENT":
+            for log in logs:
                 evt = get_event_data(
-                    self.w3.codec, self.abiLookups[log["topics"][0].hex()], log
+                    self.w3.codec,
+                    self.contracts[log["address"]][log["topics"][0].hex()]["abi"],
+                    log,
                 )
                 allEvents.append(evt)
+        elif self.mode == "ANYCONTRACT":
+            for log in logs:
+                if self.topicCounts[log["topics"][0].hex()] == len(log["topics"]):
+                    evt = get_event_data(
+                        self.w3.codec, self.abiLookups[log["topics"][0].hex()], log
+                    )
+                    allEvents.append(evt)
         self.latestBlock = end
         return allEvents
 
     def getLastScannedBlock(self):
-        return self.latestBlock
+        return self.fileHandler.latest
 
-    def scan(self, start, end, maxChunk):
+    def scan(self):
         print(
-            f"starting scan at {time.asctime(time.localtime(time.time()))}, scanning to {end}"
+            f"starting scan at {time.asctime(time.localtime(time.time()))}, scanning to {self.endBlock}"
         )
-        if start < self.latestBlock:
-            start = self.latestBlock
+        start = max([self.startBlock, self.fileHandler.latest])
         startChunk = start
         endChunk = 0
         startTime = time.time()
-        lastSave = startTime
-        totalBlocks = end - start
-        maxTries = 9
-        tries = 0
-        successes = 0
-        currentChunk = int(maxChunk / 2)
-        changeAmount = int((maxChunk) / 10)
-        initialEventCount = len(self.log)
+
+        totalBlocks = self.endBlock - start
+        self.currentChunkSize = self.startChunkSize
         numChunks = 0
-        with tqdm(total=start - end) as progress_bar:
-            while endChunk < end and (end - start > 0):
+        with tqdm(total=start - self.endBlock) as progress_bar:
+            while endChunk < self.endBlock and (self.endBlock > start):
                 try:
-                    if end - startChunk > currentChunk:
-                        endChunk = startChunk + currentChunk
-                    else:
-                        endChunk = end
+                    endChunk = min(
+                        [self.endBlock, startChunk + int(self.currentChunkSize)]
+                    )
                     events = self.scanChunk(startChunk, endChunk)
-                    successes += 1
-                    if successes > 5:
-                        currentChunk += changeAmount
-                    if currentChunk > maxChunk:
-                        currentChunk = maxChunk
-                    tries = 0
-                    self.latestBlock = endChunk
+                    self.fileHandler.log(self.getEventData(events), endChunk)
+                    self.throttle(events)
                     elapsedTime = time.time() - startTime
                     progress = (startChunk - start) / totalBlocks
                     if progress > 0:
@@ -182,46 +293,71 @@ class EventScanner:
                     else:
                         eta = "INF"
                     progress_bar.set_description(
-                        f"Current block: {startChunk} , blocks in a scan batch: {currentChunk}, events processed in a batch {len(events)} ETA:{eta}"
+                        f"Current block: {startChunk} , blocks in a scan batch: {self.currentChunkSize}, events processed in a batch {len(events)} ETA:{eta}"
                     )
-                    progress_bar.update(currentChunk)
-                    self.storeEventData(events)
+                    progress_bar.update(self.currentChunkSize)
                     startChunk = endChunk
                     numChunks += 1
-                    if time.time() - lastSave > self.saveInterval:
-                        self.saveState()
-                except ValueError as e:
-                    try:
-                        if e.args[0]["message"] == "block range is too wide":
-                            maxChunk = int(currentChunk * 0.98)
-                            print(f"reduced max chunk size to {maxChunk}")
-                    except:
-                        pass
-                    tries += 1
-                    successes = 0
-                    if tries > maxTries:
-                        print("too many failures, try reducing maxChunk")
-                        self.saveState()
-                        sys.exit()
-                    currentChunk -= changeAmount
-                    print(e, f"\nreducing scan size to {currentChunk} blocks")
+                except Exception as e:
+                    self.handleError(e)
+                if self.currentChunkSize < 0:
+                    print("cant reduce block size any more, try reducing thottleAmount")
+                    self.saveState()
+                    sys.exit()
+
         print(
-            f"Scanned total {len(self.log)-initialEventCount} events from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunk"
+            f"Scanned blocks {start}-{self.endBlock} from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunks"
         )
         self.saveState()
 
-    def storeEventData(self, events):
+    def throttleDown(self):
+        self.currentChunkSize -= self.throttleAmount
+        self.currentChunkSize = int(self.currentChunkSize / self.throttleFactor)
+
+    def throttleup(self):
+        self.currentChunkSize += self.throttleAmount
+        self.currentChunkSize = int(self.currentChunkSize * self.throttleFactor)
+
+    def throttle(self, events):
+        ratio = (self.eventsTarget - len(events)) / self.eventsTarget + 1
+        target = int(ratio * self.currentChunkSize)
+        if target > self.currentChunkSize:
+            self.currentChunkSize = int((target + self.currentChunkSize * 3) / 4)
+        else:
+            self.currentChunkSize = int((target * 3 + self.currentChunkSize) / 4)
+        self.currentChunkSize = min(self.currentChunkSize, self.maxChunkSize)
+
+    def handleError(self, e):
+        if type(e) == ValueError:
+            print("valueerror", e)
+            if e.args[0]["message"] == "block range is too wide":
+                maxChunk = int(self.currentChunkSize * 0.98)
+                print(f"reduced max chunk size to {maxChunk}")
+                successes = 0
+                self.throttleDown()
+                print(e, f"\nreducing scan size to {self.currentChunkSize} blocks")
+            elif e.args[0]["message"] == "rate limit exceeded":
+                print(f"rate limited trying again")
+        else:
+            self.throttleDown()
+            print(e, f"\nreducing scan size to {self.currentChunkSize} blocks")
+
+    def getEventData(self, events):
+        decodedEvents = {}
         for param in events:
             blockNumber, txHash, address, index = getEventParameters(param)
-            if blockNumber not in self.log:
-                self.log[blockNumber] = {}
-            if txHash not in self.log[blockNumber]:
-                self.log[blockNumber][txHash] = {}
-            if address not in self.log[blockNumber][txHash]:
-                self.log[blockNumber][txHash][address] = {}
-            self.log[blockNumber][txHash][address][index] = {}
+            if blockNumber not in decodedEvents:
+                decodedEvents[blockNumber] = {}
+            if txHash not in decodedEvents[blockNumber]:
+                decodedEvents[blockNumber][txHash] = {}
+            if address not in decodedEvents[blockNumber][txHash]:
+                decodedEvents[blockNumber][txHash][address] = {}
+            decodedEvents[blockNumber][txHash][address][index] = {}
             for eventName, eventParam in param["args"].items():
-                self.log[blockNumber][txHash][address][index][eventName] = eventParam
+                decodedEvents[blockNumber][txHash][address][index][
+                    eventName
+                ] = eventParam
+        return decodedEvents
 
     def decodeEvents(self, events):
         decodedEvents = {}
@@ -244,11 +380,7 @@ class EventScanner:
         return decodedEvents
 
     def saveState(self):
-        self.log["latest"] = self.latestBlock
-        with open(self.fileString, "w") as f:
-            f.write(json.dumps(self.log, indent=4))
-        with open(self.backupFile, "w") as f:
-            f.write(json.dumps(self.log, indent=4))
+        self.fileHandler.save()
 
     def backup(self):
         with open(os.getenv("CONFIG_PATH") + "output/backup.json", "w") as f:
@@ -284,26 +416,9 @@ def abiToSig(abi):
 
 
 def readConfig(configPath):
-    with open(configPath) as f:
+    with open(configPath + "config.json") as f:
         cfg = json.load(f)
-    apiURL = cfg["RPCSETTINGS"]["APIURL"]
-    maxChunk = cfg["RPCSETTINGS"]["MAXCHUNKSIZE"]
-    startBlock = cfg["SCANSETTINGS"]["STARTBLOCK"]
-    endBlock = cfg["SCANSETTINGS"]["ENDBLOCK"]
-    abi = cfg["SCANSETTINGS"]["ABI"]
-    contracts = cfg["SCANSETTINGS"]["CONTRACTS"]
-    fileString = cfg["FILESETTINGS"]["FILENAME"]
-    saveinterval = cfg["FILESETTINGS"]["SAVEINTERVAL"]
-    return (
-        apiURL,
-        maxChunk,
-        startBlock,
-        endBlock,
-        abi,
-        contracts,
-        saveinterval,
-        fileString,
-    )
+    return cfg["RPCSETTINGS"], cfg["SCANSETTINGS"], cfg["FILESETTINGS"]
 
 
 if __name__ == "__main__":
@@ -311,29 +426,5 @@ if __name__ == "__main__":
     import os
 
     load_dotenv()
-    (
-        w3,
-        contracts,
-        eventSigs,
-        abi,
-        fileString,
-        saveInterval,
-        startBlock,
-        endBlock,
-        maxChunk,
-        abiLookups,
-        topicCounts,
-        websocket,
-    ) = getScanParameters(os.getenv("FOLDER") + "config.json")
-    scan(
-        w3,
-        contracts,
-        eventSigs,
-        abi,
-        fileString,
-        saveInterval,
-        startBlock,
-        endBlock,
-        maxChunk,
-        os.getenv("FOLDER"),
-    )
+    scan()
+# //  9550996,
