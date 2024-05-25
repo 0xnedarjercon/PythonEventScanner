@@ -8,7 +8,6 @@ import os
 from logger import Logger
 
 
-
 directory = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -29,17 +28,19 @@ def scan():
 class EventScanner(Logger):
 
     def __init__(self):
-        
+
         folderPath = os.getenv("FOLDER_PATH")
         self.threads = []
-        self.configPath = f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
+        self.configPath = (
+            f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
+        )
         rpcSettings, scanSettings, fileSettings = readConfig(self.configPath)
         self.loadScanSettings(scanSettings)
         self.fileHandler = FileHandler(self, fileSettings, scanSettings["DEBUGLEVEL"])
         self.loadRPCSettings(rpcSettings)
-        
+
     def loadScanSettings(self, scanSettings):
-        super().__init__('scanner', scanSettings["DEBUG"])
+        super().__init__("scanner", scanSettings["DEBUG"])
         self.startBlock = scanSettings["STARTBLOCK"]
         if scanSettings["ENDBLOCK"] == "current":
             self.endBlock = self.rpcs[0].w3.eth.get_block_number()
@@ -50,14 +51,14 @@ class EventScanner(Logger):
         self.loadAbis()
         self.processContracts(scanSettings["CONTRACTS"])
         self.forceNew = scanSettings["FORCENEW"]
-        
+
     def processEvents(self, event):
         eventName = event["name"]
         inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
         eventSig = Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
         topicCount = sum(1 for inp in event["inputs"] if inp["indexed"]) + 1
-        return eventSig, topicCount      
-    
+        return eventSig, topicCount
+
     def processContracts(self, contracts):
         self.contracts = {}
         self.abiLookups = {}
@@ -68,35 +69,31 @@ class EventScanner(Logger):
                 if entry["type"] == "event":
                     eventSig, topicCount = self.processEvents(entry)
                     self.contracts[checksumAddress][eventSig] = entry
-                    if entry['name'] in self.events:
-                        self.abiLookups[eventSig]={topicCount: entry}
+                    if entry["name"] in self.events:
+                        self.abiLookups[eventSig] = {topicCount: entry}
 
-    
     def loadAbis(self):
         self.abis = {}
-        files = os.listdir(self.configPath+ 'ABIs/')
+        files = os.listdir(self.configPath + "ABIs/")
         for file in files:
-            if file.endswith('.json'):
-                self.abis[file[:-5]]=json.load(open(self.configPath+ 'ABIs/'+file))
-                
+            if file.endswith(".json"):
+                self.abis[file[:-5]] = json.load(open(self.configPath + "ABIs/" + file))
+
     def loadRPCSettings(self, rpcSettings):
         self.rpcs = []
         for rpcSetting in rpcSettings:
             self.rpcs.append(RPC(rpcSetting, self))
-
-
-        
-
-
 
     def getLastScannedBlock(self):
         return self.fileHandler.latest
 
     def saveState(self):
         self.fileHandler.save()
+
     def interrupt(self):
-        self.logInfo('keyboard interrupt')
+        self.logInfo("keyboard interrupt")
         self.teardown()
+
     def teardown(self):
         for rpc in self.rpcs:
             rpc.running = False
@@ -124,7 +121,9 @@ class EventScanner(Logger):
                     if len(rpc.jobs) == 0:
                         if len(rpc.currentResults) > 0:
                             results, start, end = rpc.getResults()
-                            self.logInfo(f"data added to pending {start} to {end} from {rpc.apiUrl}")
+                            self.logInfo(
+                                f"data added to pending {start} to {end} from {rpc.apiUrl}"
+                            )
                             self.fileHandler.process(results, start, end)
                             rpc.currentResults = {}
                         if self.endBlock > startChunk:
@@ -136,9 +135,11 @@ class EventScanner(Logger):
                 progress = (startChunk - start) / totalBlocks
                 if progress > 0:
                     totalEstimatedTime = elapsedTime / progress
-                    remainingTime = ((totalEstimatedTime * (1 - progress))+remainingTime*3)/4
-                    
-                    eta = f'{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})'
+                    remainingTime = (
+                        (totalEstimatedTime * (1 - progress)) + remainingTime * 3
+                    ) / 4
+
+                    eta = f"{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})"
                 else:
                     eta = "INF"
                 progress_bar.set_description(f"Current block: {startChunk} ETA:{eta}")
@@ -151,7 +152,6 @@ class EventScanner(Logger):
         )
         self.teardown()
 
-        
 
 def readConfig(configPath):
     with open(configPath + "config.json") as f:

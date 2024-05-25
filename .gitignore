@@ -1,6 +1,4 @@
 */output/*
 *.pyc
-./settings
-!./settings/example
 *.log
 .env
