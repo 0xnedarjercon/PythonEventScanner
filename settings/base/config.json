@@ -8,6 +8,7 @@
       "THROTTLEAMOUNT": 100,
       "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 1400,
+      "POLLINTERVAL": 0.1,
       "DEBUG": false
     },
     {
@@ -18,6 +19,7 @@
       "THROTTLEAMOUNT": 100,
       "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 1400,
+      "POLLINTERVAL": 0.1,
       "DEBUG": false
     },
     {
@@ -28,6 +30,7 @@
       "THROTTLEAMOUNT": 100,
       "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 1400,
+      "POLLINTERVAL": 0.1,
       "DEBUG": false
     }
   ],

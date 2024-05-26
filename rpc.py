@@ -6,6 +6,9 @@ import re
 from logger import Logger
 import math
 import asyncio
+import queue
+import threading
+
 
 def getW3(cfg):
     apiURL = cfg["APIURL"]
@@ -60,7 +63,6 @@ def decodeEvents(self, events):
         for eventName, eventParam in param["args"].items():
             decodedEvents[address][index][eventName] = eventParam
             self.log[blockNumber][txHash][address][index][eventName] = eventParam
-        self.saveState()
     return decodedEvents
 
 
@@ -74,7 +76,7 @@ def getEventParameters(param):
 
 
 class RPC(Logger):
-    def __init__(self, rpcSettings,eventScanner, jobs=[], results={}):
+    def __init__(self, rpcSettings, eventScanner, jobs=None, results=None):
         self.apiUrl = rpcSettings["APIURL"]
         super().__init__(self.apiUrl, rpcSettings["DEBUG"])
         self.w3, self.websocket = getW3(rpcSettings)
@@ -83,29 +85,34 @@ class RPC(Logger):
         self.throttleFactor = rpcSettings["THROTTLEFACTOR"]
         self.throttleAmount = rpcSettings["THROTTLEAMOUNT"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
+        self.pollInterval = rpcSettings["POLLINTERVAL"]
         self.es = eventScanner
         self.jobTime = time.time()
-        self.jobs = []
-        self.currentResults = {}
-        self.debugQueue = []
+        if jobs == None:
+            self.jobs = []
+        else:
+            self.jobs = jobs
+        if results == None:
+            self.currentResults = {}
+        else:
+            self.currentResults = results
         self.start = 0
         self.end = 0
         self.running = True
         self.debug = rpcSettings["DEBUG"]
-        self.logInfo(f'logging enabled')
-        self.state = 0
+        self.logInfo(f"logging enabled")
+        self.lock = threading.Lock()
         if len(self.jobs) > 0:
-            print('error')
-        
+            print("error")
 
     def run(self):
         while self.running:
             if len(self.jobs) > 0:
                 if self.start == 0:
-                    print('error')
+                    print("error")
                 try:
                     job = self.getJob()
-                    self.logInfo(f'starting job {job}')
+                    self.logInfo(f"starting job {job}")
                     events = self.scanChunk(job[0], job[1])
                     self.currentResults.update(self.getEventData(events))
                     self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
@@ -114,33 +121,44 @@ class RPC(Logger):
                     )
                     self.jobs.pop(0)
                 except Exception as e:
- 
+
                     self.handleError(e)
-            else:
-                self.state = 2
+
+    def runLive(self, startBlock):
+        self.filterParams = self.getFilter(startBlock, "latest")
+        if self.websocket:
+            self.filterParams = self.w3.eth.filter(self.filterParams)
+            while self.running:
+                newEvents = self.filterParams.get_new_entries()
+                if len(newEvents) > 0:
+                    self.currentResults = getEventData(newEvents)
+                time.sleep(self.pollInterval)
+        else:
+            while True:
+                newEvents = self.w3.eth.get_logs(self.filterParams)
+                if len(newEvents) > 0:
+                    self.currentResults = getEventData(newEvents)
+                time.sleep(self.pollInterval)
 
     def getResults(self):
-        self.state = 0
-        self.logInfo(f'results extracted {self.start} to {self.end}')
-        return self.currentResults, self.start,  self.end
-    
+        self.logInfo(f"results extracted {self.start} to {self.end}")
+        return self.currentResults, self.start, self.end
+
     def addJob(self, startBlock, endBlock):
-        self.state = 1
         end = min(endBlock, startBlock + self.currentChunkSize)
         self.jobs.append((startBlock, end))
         self.start = startBlock
         self.end = end
         self.logInfo(f"job added: {self.jobs} ")
         return end
-    
+
     def getJob(self):
-        length = self.jobs[0][1]-self.jobs[0][0]
-        if length >self.currentChunkSize:
+        length = self.jobs[0][1] - self.jobs[0][0]
+        if length > self.currentChunkSize:
             self.logInfo(f"existing job too big, splitting")
-            self.splitJob(math.ceil(length/self.currentChunkSize))
+            self.splitJob(math.ceil(length / self.currentChunkSize))
         return self.jobs[0]
-        
-        
+
     def scanChunk(self, start, end):
         allEvents = []
         filterParams = self.getFilter(start, end)
@@ -159,10 +177,12 @@ class RPC(Logger):
                 numTopics = len(eventLog["topics"])
                 if numTopics in eventLookup:
                     evt = get_event_data(
-                        self.w3.codec, self.es.abiLookups[eventLog["topics"][0].hex()][numTopics], eventLog
+                        self.w3.codec,
+                        self.es.abiLookups[eventLog["topics"][0].hex()][numTopics],
+                        eventLog,
                     )
                     allEvents.append(evt)
-        
+
         return allEvents
 
     def getFilter(self, start, end):
@@ -186,37 +206,41 @@ class RPC(Logger):
             ratio = self.eventsTarget / (len(events))
             targetBlocks = int(ratio * blockRange)
             self.currentChunkSize = targetBlocks
-            
-    def getFactor(self,current, target):
+
+    def getFactor(self, current, target):
         factor = 1
-        while current/factor>target:
+        while current / factor > target:
             factor += 1
         return factor
-    
+
     def handleError(self, e):
         if type(e) == ValueError:
             if e.args[0]["message"] == "block range is too wide":
                 self.maxChunk = int(self.currentChunkSize * 0.98)
                 self.currentChunkSize = self.maxChunk
-                self.logInfo(
-                    f"blockrange too wide, reduced max to {self.maxChunk}"
-                )
-            elif e.args[0]["message"] == 'invalid params':
-                if 'Try with this block range' in e.args[0]["data"]:
-                    match = re.search(r'\[0x([0-9a-fA-F]+), 0x([0-9a-fA-F]+)\]', e.args[0]["data"])
+                self.logInfo(f"blockrange too wide, reduced max to {self.maxChunk}")
+            elif e.args[0]["message"] == "invalid params":
+                if "Try with this block range" in e.args[0]["data"]:
+                    match = re.search(
+                        r"\[0x([0-9a-fA-F]+), 0x([0-9a-fA-F]+)\]", e.args[0]["data"]
+                    )
                     if match:
                         start_hex, end_hex = match.groups()
-                        suggestedLength = int(end_hex, 16)-int(start_hex, 16)
+                        suggestedLength = int(end_hex, 16) - int(start_hex, 16)
                         self.logInfo(
-                    f"too many events, suggested range {suggestedLength}"
-                )
-                        self.splitJob(math.ceil(self.currentChunkSize / suggestedLength))
+                            f"too many events, suggested range {suggestedLength}"
+                        )
+                        self.splitJob(
+                            math.ceil(self.currentChunkSize / suggestedLength)
+                        )
                     else:
-                        self.logWarn(f"unable to find suggested block range, splitting jobs")
+                        self.logWarn(
+                            f"unable to find suggested block range, splitting jobs"
+                        )
                         self.splitJob(2)
             elif e.args[0]["message"] == "rate limit exceeded":
                 self.logInfo(f"rate limited trying again")
-                
+
         elif type(e) == asyncio.exceptions.TimeoutError:
             self.logInfo(f"timeout error, splitting jobs")
             self.splitJob(2)
@@ -224,18 +248,18 @@ class RPC(Logger):
             self.logWarn(f"unhandled error {type(e), e} splitting jobs")
             self.splitJob(2)
 
-    def splitJob(self, numJobs, reduceChunkSize = True):
+    def splitJob(self, numJobs, reduceChunkSize=True):
         oldJob = self.jobs[0]
-        chunkSize = math.ceil((oldJob[1]-oldJob[0])/numJobs)+1
+        chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs) + 1
         if reduceChunkSize:
-            self.currentChunkSize = chunkSize            
+            self.currentChunkSize = chunkSize
         current = oldJob[0]
-        newJobs = []
-        for _ in range(numJobs):
-            newJobs.append((current, current+chunkSize))
-            current +=chunkSize
-        self.logInfo(f"splitting Job {self.jobs[0]} to {chunkSize} blocks: {newJobs}")
-        self.jobs= newJobs+self.jobs[1:]
+        for i in range(numJobs):
+            self.jobs.insert(1 + i, (current, current + chunkSize))
+            current += chunkSize
+        self.logInfo(
+            f"splitting Job {self.jobs[0]} to {chunkSize} blocks: {self.jobs[1:1+numJobs]}"
+        )
 
     def getEventData(self, events):
         decodedEvents = {}

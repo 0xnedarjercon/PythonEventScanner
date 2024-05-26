@@ -6,7 +6,7 @@ import json
 from tqdm import tqdm
 import os
 from logger import Logger
-
+from threadSafe import TSList, TSDict
 
 directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -82,7 +82,7 @@ class EventScanner(Logger):
     def loadRPCSettings(self, rpcSettings):
         self.rpcs = []
         for rpcSetting in rpcSettings:
-            self.rpcs.append(RPC(rpcSetting, self))
+            self.rpcs.append(RPC(rpcSetting, self, jobs=TSList(), results=TSDict()))
 
     def getLastScannedBlock(self):
         return self.fileHandler.latest
@@ -98,6 +98,7 @@ class EventScanner(Logger):
         for rpc in self.rpcs:
             rpc.running = False
         self.fileHandler.save()
+        self.threads = []
 
     def scan(self):
         startTime = time.time()
@@ -125,7 +126,7 @@ class EventScanner(Logger):
                                 f"data added to pending {start} to {end} from {rpc.apiUrl}"
                             )
                             self.fileHandler.process(results, start, end)
-                            rpc.currentResults = {}
+                            rpc.currentResults.clear()
                         if self.endBlock > startChunk:
                             numChunks += 1
                             startChunk = rpc.addJob(startChunk, self.endBlock)
@@ -151,6 +152,24 @@ class EventScanner(Logger):
             f"average {(self.endBlock-start)/(time.time()-startTime)} blocks per second"
         )
         self.teardown()
+
+    def liveScan(self, startBlock, storeResults=False, callback=None):
+        assert (
+            storeResults or callback != None
+        ), "what am i supposed to d with the data?"
+        for rpc in self.rpcs:
+            thread = threading.Thread(target=rpc.runLive, args=startBlock)
+            self.threads.append(thread)
+            thread.start()
+        while True:
+            results = []
+            for rpc in self.rpcs:
+                if len(rpc.currentResults) > 0:
+                    if callback != None:
+                        callback(rpc.currentResults)
+                    results.append(rpc.currentResults)
+            if storeResults:
+                self.fileHandler.addToPending(results)
 
 
 def readConfig(configPath):
