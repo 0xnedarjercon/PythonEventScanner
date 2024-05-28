@@ -1,16 +1,15 @@
 from web3 import Web3
 import time
-from web3._utils.events import get_event_data
 import threading
 import json
 from tqdm import tqdm
 import os
 from logger import Logger
-from threadSafe import TSList, TSDict
+import multiprocessing
+import copy
+from scannerRpcInterface import ScannerRPCInterface
 
 directory = os.path.dirname(os.path.abspath(__file__))
-
-
 from rpc import RPC
 from fileHandler import FileHandler
 
@@ -25,32 +24,55 @@ def scan():
     return es.fileHandler.latest
 
 
+def scanLive():
+    es = EventScanner()
+
+    try:
+        es.scan()
+    except KeyboardInterrupt:
+        print("keyboard interrupt detected, saving...")
+        es.interrupt()
+    return es.fileHandler.latest
+
+
+def initRPCProcess(settings, iRpc, scanMode, contracts, abiLookups, configPath):
+    rpc = RPC(settings, iRpc, scanMode, contracts, abiLookups, configPath)
+    try:
+        rpc.run()
+    except:
+        print("process failed")
+
+
 class EventScanner(Logger):
 
     def __init__(self):
-
+        self.iRpc = ScannerRPCInterface()
         folderPath = os.getenv("FOLDER_PATH")
         self.threads = []
         self.configPath = (
             f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
         )
         rpcSettings, scanSettings, fileSettings = readConfig(self.configPath)
-        self.loadScanSettings(scanSettings)
-        self.fileHandler = FileHandler(self, fileSettings, scanSettings["DEBUGLEVEL"])
-        self.loadRPCSettings(rpcSettings)
+        super().__init__("scanner", scanSettings, self.configPath)
+        self.loadSettings(scanSettings, rpcSettings)
+        self.fileHandler = FileHandler(self, fileSettings, self.configPath)
 
-    def loadScanSettings(self, scanSettings):
-        super().__init__("scanner", scanSettings["DEBUG"])
-        self.startBlock = scanSettings["STARTBLOCK"]
+    def loadSettings(self, scanSettings, rpcSettings):
+        super().__init__("scanner", scanSettings, self.configPath)
+        self.scanMode = scanSettings["MODE"]
+        self.events = scanSettings["EVENTS"]
+        self.loadAbis()
+        self.processContracts(scanSettings["CONTRACTS"])
+        self.initRpcs(rpcSettings)
+        if scanSettings["STARTBLOCK"] == "current":
+            self.startBlock = self.rpcs[0].w3.eth.get_block_number()
+        else:
+            self.startBlock = scanSettings["STARTBLOCK"]
         if scanSettings["ENDBLOCK"] == "current":
             self.endBlock = self.rpcs[0].w3.eth.get_block_number()
         else:
             self.endBlock = scanSettings["ENDBLOCK"]
-        self.mode = scanSettings["MODE"]
-        self.events = scanSettings["EVENTS"]
-        self.loadAbis()
-        self.processContracts(scanSettings["CONTRACTS"])
-        self.forceNew = scanSettings["FORCENEW"]
+        self.liveThreshold = scanSettings["LIVETHRESHOLD"]
 
     def processEvents(self, event):
         eventName = event["name"]
@@ -72,6 +94,9 @@ class EventScanner(Logger):
                     if entry["name"] in self.events:
                         self.abiLookups[eventSig] = {topicCount: entry}
 
+    def getLatestBlock(self):
+        return self.rpcs[0].w3.eth.get_block_number()
+
     def loadAbis(self):
         self.abis = {}
         files = os.listdir(self.configPath + "ABIs/")
@@ -79,10 +104,22 @@ class EventScanner(Logger):
             if file.endswith(".json"):
                 self.abis[file[:-5]] = json.load(open(self.configPath + "ABIs/" + file))
 
-    def loadRPCSettings(self, rpcSettings):
-        self.rpcs = []
+    def initRpcs(self, rpcSettings):
+        self.processes = []
         for rpcSetting in rpcSettings:
-            self.rpcs.append(RPC(rpcSetting, self, jobs=TSList(), results=TSDict()))
+            process = multiprocessing.Process(
+                target=initRPCProcess,
+                args=(
+                    rpcSetting,
+                    self.iRpc,
+                    self.scanMode,
+                    self.contracts,
+                    self.abiLookups,
+                    self.configPath,
+                ),
+            )
+            self.processes.append(process)
+            process.start()
 
     def getLastScannedBlock(self):
         return self.fileHandler.latest
@@ -95,81 +132,131 @@ class EventScanner(Logger):
         self.teardown()
 
     def teardown(self):
-        for rpc in self.rpcs:
-            rpc.running = False
+        self.iRpc.state = -1
         self.fileHandler.save()
-        self.threads = []
 
-    def scan(self):
-        startTime = time.time()
-        start = max([self.startBlock, self.fileHandler.latest])
-        startChunk = start
-        remainingTime = 0
-        totalBlocks = self.endBlock - start
+    def checkRpcJobs(self, currentBlock, endBlock, maxChunkSize):
         numChunks = 0
-        print(
-            f"starting scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {self.endBlock}"
-        )
-
         for rpc in self.rpcs:
-            thread = threading.Thread(target=rpc.run)
-            self.threads.append(thread)
-            thread.start()
-        with tqdm(total=start - self.endBlock) as progress_bar:
-            while self.fileHandler.latest < self.endBlock:
-                prevStart = start
-                for rpc in self.rpcs:
-                    if len(rpc.jobs) == 0:
-                        if len(rpc.currentResults) > 0:
-                            results, start, end = rpc.getResults()
-                            self.logInfo(
-                                f"data added to pending {start} to {end} from {rpc.apiUrl}"
-                            )
-                            self.fileHandler.process(results, start, end)
-                            rpc.currentResults.clear()
-                        if self.endBlock > startChunk:
-                            numChunks += 1
-                            startChunk = rpc.addJob(startChunk, self.endBlock)
-                    else:
-                        pass
-                elapsedTime = time.time() - startTime
-                progress = (startChunk - start) / totalBlocks
-                if progress > 0:
-                    totalEstimatedTime = elapsedTime / progress
-                    remainingTime = (
-                        (totalEstimatedTime * (1 - progress)) + remainingTime * 3
-                    ) / 4
+            if len(rpc.jobs) == 0:
+                if len(rpc.currentResults) > 0:
+                    results, start, end = rpc.getResults()
+                    self.logInfo(
+                        f"data added to pending {start} to {end} from {rpc.apiUrl}"
+                    )
+                    self.fileHandler.process(results, start, end)
+                    rpc.currentResults.clear()
+                if endBlock > currentBlock:
+                    numChunks += 1
+                    currentBlock = rpc.addJob(
+                        currentBlock, min([endBlock, currentBlock + maxChunkSize])
+                    )
+        return currentBlock, numChunks
 
-                    eta = f"{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})"
-                else:
-                    eta = "INF"
-                progress_bar.set_description(f"Current block: {startChunk} ETA:{eta}")
-                progress_bar.update(start - prevStart)
+    def updateProgress(
+        self,
+        progress_bar,
+        startTime,
+        currentBlock,
+        start,
+        totalBlocks,
+        prevStart,
+        remainingTime,
+    ):
+        elapsedTime = time.time() - startTime
+        progress = (currentBlock - start) / totalBlocks
+        avg = (currentBlock - start) / elapsedTime + 0.1
+
+        remainingTime = (totalBlocks - (currentBlock - start)) / avg
+        eta = f"{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})"
+        progress_bar.set_description(
+            f"Current block: {currentBlock} ETA:{eta} avg: {avg} progress: {progress*100}%"
+        )
+        progress_bar.update(start - prevStart)
+
+    def scanFixedEnd(self, start, endBlock):
+        startTime = time.time()
+        totalBlocks = endBlock - start
+        currentBlock = start
+        numChunks = 0
+        remainingTime = 1
+        self.iRpc.setScanRange(start, endBlock)
+        self.iRpc.state = 1
         self.logInfo(
-            f"Completed: Scanned blocks {start}-{self.endBlock} from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunks"
+            f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
+            True,
+        )
+        with tqdm(total=endBlock - start) as progress_bar:
+            while self.fileHandler.latest < endBlock:
+                prevStart = start
+                results = self.iRpc.getResults()
+                for result in results:
+                    self.fileHandler.process(result)
+                    currentBlock = result[2]
+                self.updateProgress(
+                    progress_bar,
+                    startTime,
+                    currentBlock,
+                    start,
+                    totalBlocks,
+                    prevStart,
+                    remainingTime,
+                )
+                time.sleep(0.5)
+        self.logInfo(
+            f"Completed: Scanned blocks {start}-{self.endBlock} in {startTime-time.time()}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunks",
+            True,
         )
         self.logInfo(
-            f"average {(self.endBlock-start)/(time.time()-startTime)} blocks per second"
+            f"average {(endBlock-start)/(time.time()-startTime)} blocks per second",
+            True,
         )
+        return endBlock
+
+    def scan(self, storeResults=False, callback=None, resultsOut=None):
+        start = max([self.startBlock, self.fileHandler.latest])
+        if type(self.endBlock) == int:
+            self.scanFixedEnd(start, self.endBlock)
+        elif self.endBlock == "latest":
+            latestBlock = self.rpcs[0].w3.eth.get_block_number()
+            while latestBlock > self.fileHandler.latest + self.liveThreshold:
+                self.logInfo(f"scanning to latest block: {latestBlock}")
+                self.scanFixedEnd(start, latestBlock)
+                latestBlock = self.rpcs[0].w3.eth.get_block_number()
+            self.logInfo(
+                f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
+            )
+            self.teardown()
+            self.startLiveRPCThreads()
+            self.liveScan(
+                self.fileHandler.latest,
+                resultsOut,
+                storeResults,
+                callback,
+            )
+
         self.teardown()
 
-    def liveScan(self, startBlock, storeResults=False, callback=None):
-        assert (
-            storeResults or callback != None
-        ), "what am i supposed to d with the data?"
-        for rpc in self.rpcs:
-            thread = threading.Thread(target=rpc.runLive, args=startBlock)
-            self.threads.append(thread)
-            thread.start()
+    def liveScan(self, startBlock, resultsOut=None, storeResults=False, callback=None):
+        if not storeResults and callback == None and resultsOut == None:
+            self.logWarn("data not being stored or used during livescan", True)
         while True:
-            results = []
             for rpc in self.rpcs:
                 if len(rpc.currentResults) > 0:
+                    result = copy.deepcopy(rpc.currentResults)
+                    self.lastBlock = max([list(result.keys())[-1], self.lastBlock])
+                    self.logInfo(f"lastBlock updated to {self.lastBlock}")
+                    if resultsOut != None:
+                        resultsOut.append(result)
+                        self.logInfo(f"resultsOut updated")
                     if callback != None:
-                        callback(rpc.currentResults)
-                    results.append(rpc.currentResults)
-            if storeResults:
-                self.fileHandler.addToPending(results)
+                        self.logInfo(f"callback")
+                        callback(result)
+                    if storeResults:
+                        self.fileHandler.addToPending(
+                            rpc.currentResults, startBlock, self.lastBlock
+                        )
+                    rpc.currentResults.clear()
 
 
 def readConfig(configPath):

@@ -5,17 +5,14 @@ from logger import Logger
 
 
 class FileHandler(Logger):
-    def __init__(self, eventScanner, fileSettings, debugLevel):
-        super().__init__("fileHandler", fileSettings["DEBUG"])
-
+    def __init__(self, eventScanner, fileSettings, configPath):
+        super().__init__("fileHandler", fileSettings, configPath)
         self.es = eventScanner
-        filePath = self.es.configPath + self.getFileString(fileSettings)
-        Logger.initLog(f"{filePath}", debugLevel)
+        filePath = configPath + fileSettings["FILENAME"]
         try:
             os.mkdir(filePath)
         except:
             pass
-
         self.currentFile = None
         self.latest = 0
         self.filePath = filePath
@@ -31,8 +28,8 @@ class FileHandler(Logger):
         self.save()
         self.logInfo(f"new file created starting {self.latest}")
 
-    def process(self, data, startBlock, lastBlock):
-        self.addToPending([startBlock, data, lastBlock])
+    def process(self, data):
+        self.addToPending(data)
         self.mergePending()
         if len(self.currentData) > self.maxEntries:
             self.save()
@@ -41,21 +38,6 @@ class FileHandler(Logger):
             time.time() > self.lastSave + self.saveInterval and self.currentData != None
         ):
             self.save()
-
-    def getFileString(self, fileSettings):
-        if fileSettings["FILENAME"] == "":
-            startBlock = self.startBlock
-            endBlock = self.endBlock
-            if self.es.mode == "ANYEVENT":
-                contracts = list(self.es.contracts.keys())
-                fileString = (
-                    f"Block {startBlock} to {endBlock} contracts {','.join(contracts)}"
-                )
-            elif self.es.mode == "ANYCONTRACT":
-                fileString = f"Block {startBlock} to {endBlock} events {','.join(self.es.events)}"
-        else:
-            fileString = fileSettings["FILENAME"]
-        return fileString
 
     def mergePending(self):
         while len(self.pending) > 0 and self.pending[0][0] <= self.latest:
