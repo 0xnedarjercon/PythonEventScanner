@@ -52,8 +52,8 @@
     "DEBUGLEVEL": "INFO"
   },
   "SCANSETTINGS": {
-    "STARTBLOCK": 14966334,
-    "ENDBLOCK": 14970334,
+    "STARTBLOCK": "current",
+    "ENDBLOCK": "latest",
     "LIVETHRESHOLD": 100,
     "FORCENEW": false,
     "DEBUGLEVEL": "INFO",

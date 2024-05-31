@@ -8,6 +8,8 @@ from logger import Logger
 import multiprocessing
 import copy
 from scannerRpcInterface import ScannerRPCInterface
+import atexit
+
 
 directory = os.path.dirname(os.path.abspath(__file__))
 from rpc import RPC
@@ -16,6 +18,9 @@ from fileHandler import FileHandler
 
 def scan():
     es = EventScanner()
+
+    # Register the cleanup function
+    atexit.register(es.teardown)
     try:
         es.scan()
     except KeyboardInterrupt:
@@ -39,8 +44,16 @@ def initRPCProcess(settings, iRpc, scanMode, contracts, abiLookups, configPath):
     rpc = RPC(settings, iRpc, scanMode, contracts, abiLookups, configPath)
     try:
         rpc.run()
-    except:
-        print("process failed")
+    except Exception as e:
+        print(f"process failed {e}")
+
+
+def processEvents(event):
+    eventName = event["name"]
+    inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
+    eventSig = Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
+    topicCount = sum(1 for inp in event["inputs"] if inp["indexed"]) + 1
+    return eventSig, topicCount
 
 
 class EventScanner(Logger):
@@ -65,21 +78,15 @@ class EventScanner(Logger):
         self.processContracts(scanSettings["CONTRACTS"])
         self.initRpcs(rpcSettings)
         if scanSettings["STARTBLOCK"] == "current":
-            self.startBlock = self.rpcs[0].w3.eth.get_block_number()
+            self.startBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
+
         else:
             self.startBlock = scanSettings["STARTBLOCK"]
         if scanSettings["ENDBLOCK"] == "current":
-            self.endBlock = self.rpcs[0].w3.eth.get_block_number()
+            self.endBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
         else:
             self.endBlock = scanSettings["ENDBLOCK"]
         self.liveThreshold = scanSettings["LIVETHRESHOLD"]
-
-    def processEvents(self, event):
-        eventName = event["name"]
-        inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
-        eventSig = Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
-        topicCount = sum(1 for inp in event["inputs"] if inp["indexed"]) + 1
-        return eventSig, topicCount
 
     def processContracts(self, contracts):
         self.contracts = {}
@@ -89,13 +96,10 @@ class EventScanner(Logger):
             self.contracts[checksumAddress] = {}
             for entry in self.abis[abiFile]:
                 if entry["type"] == "event":
-                    eventSig, topicCount = self.processEvents(entry)
+                    eventSig, topicCount = processEvents(entry)
                     self.contracts[checksumAddress][eventSig] = entry
                     if entry["name"] in self.events:
                         self.abiLookups[eventSig] = {topicCount: entry}
-
-    def getLatestBlock(self):
-        return self.rpcs[0].w3.eth.get_block_number()
 
     def loadAbis(self):
         self.abis = {}
@@ -121,7 +125,7 @@ class EventScanner(Logger):
             self.processes.append(process)
             process.start()
 
-    def getLastScannedBlock(self):
+    def getLastStoredBlock(self):
         return self.fileHandler.latest
 
     def saveState(self):
@@ -202,7 +206,6 @@ class EventScanner(Logger):
                     prevStart,
                     remainingTime,
                 )
-                time.sleep(0.5)
         self.logInfo(
             f"Completed: Scanned blocks {start}-{self.endBlock} in {startTime-time.time()}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunks",
             True,
@@ -218,45 +221,53 @@ class EventScanner(Logger):
         if type(self.endBlock) == int:
             self.scanFixedEnd(start, self.endBlock)
         elif self.endBlock == "latest":
-            latestBlock = self.rpcs[0].w3.eth.get_block_number()
+            latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
             while latestBlock > self.fileHandler.latest + self.liveThreshold:
                 self.logInfo(f"scanning to latest block: {latestBlock}")
                 self.scanFixedEnd(start, latestBlock)
-                latestBlock = self.rpcs[0].w3.eth.get_block_number()
+                latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
             self.logInfo(
                 f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
             )
-            self.teardown()
-            self.startLiveRPCThreads()
-            self.liveScan(
-                self.fileHandler.latest,
+            self.scanLive(
                 resultsOut,
                 storeResults,
                 callback,
             )
-
         self.teardown()
 
-    def liveScan(self, startBlock, resultsOut=None, storeResults=False, callback=None):
-        if not storeResults and callback == None and resultsOut == None:
+    def scanLive(self, resultsOut=None, storeResults=True, callback=None):
+        if callback == None and resultsOut == None and not storeResults:
             self.logWarn("data not being stored or used during livescan", True)
+        self.iRpc.state = 2
+        self.iRpc.start = self.getLastStoredBlock()
+        if resultsOut == None:
+            resultsOut = {}
         while True:
-            for rpc in self.rpcs:
-                if len(rpc.currentResults) > 0:
-                    result = copy.deepcopy(rpc.currentResults)
-                    self.lastBlock = max([list(result.keys())[-1], self.lastBlock])
-                    self.logInfo(f"lastBlock updated to {self.lastBlock}")
-                    if resultsOut != None:
-                        resultsOut.append(result)
-                        self.logInfo(f"resultsOut updated")
-                    if callback != None:
-                        self.logInfo(f"callback")
-                        callback(result)
-                    if storeResults:
-                        self.fileHandler.addToPending(
-                            rpc.currentResults, startBlock, self.lastBlock
-                        )
-                    rpc.currentResults.clear()
+            resultsOut.update(self.iRpc.getResults())
+            if callback != None:
+                self.callback(resultsOut)
+            if storeResults:
+                self.fileHandler.process(resultsOut)
+            resultsOut.clear()
+
+            # if len(results) > 0:
+
+            #     if len(rpc.currentResults) > 0:
+            #         result = copy.deepcopy(rpc.currentResults)
+            #         self.lastBlock = max([list(result.keys())[-1], self.lastBlock])
+            #         self.logInfo(f"lastBlock updated to {self.lastBlock}")
+            #         if resultsOut != None:
+            #             resultsOut.append(result)
+            #             self.logInfo(f"resultsOut updated")
+            #         if callback != None:
+            #             self.logInfo(f"callback")
+            #             callback(result)
+            #         if storeResults:
+            #             self.fileHandler.addToPending(
+            #                 rpc.currentResults, startBlock, self.lastBlock
+            #             )
+            #         rpc.currentResults.clear()
 
 
 def readConfig(configPath):

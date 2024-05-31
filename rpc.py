@@ -8,6 +8,7 @@ import math
 import asyncio
 import copy
 import threading
+import traceback
 
 
 def getW3(cfg):
@@ -105,7 +106,8 @@ class RPC(Logger):
 
     def run(self):
         state = self.iScanner.state
-        while state > 0:
+        while state > -1:
+            self.iScanner.checkSyncRequest(self)
             if state == 1:
                 self.runFixed()
             elif state == 2:
@@ -116,6 +118,7 @@ class RPC(Logger):
 
     def runFixed(self):
         while self.iScanner.state == 1:
+            self.iScanner.checkSyncRequest(self)
             if len(self.jobs) == 0:
                 newJob = self.iScanner.getJob(self.currentChunkSize)
                 if newJob != []:
@@ -138,41 +141,48 @@ class RPC(Logger):
                     self.handleError(e)
 
     def runLive(self):
-        lastBlock = self.iScanner.lastBlock
-        self.logInfo(f"livescan started at block {lastBlock}")
+        start = self.iScanner.start
+        self.logInfo(f"livescan started at block {start}")
         if self.websocket:
-            self.filterParams = self.getFilter(lastBlock, "latest")
+            self.filterParams = self.getFilter(start, "latest")
             self.filterParams = self.w3.eth.filter(self.filterParams)
-            while self.iScanner.state:
-                lastBlock = self.iScanner.lastBlock
+            while self.iScanner.state == 2:
+
+                start = self.iScanner.start
                 try:
+                    self.iScanner.checkSyncRequest(self)
                     startTime = time.time()
                     self.logInfo("request latest events")
                     newEvents = self.filterParams.get_new_entries()
                     if len(newEvents) > 0:
                         self.logInfo(f"updating results with {len(newEvents)}")
-                        self.currentResults.update(self.decodeEvents(newEvents))
+                        self.iScanner.addResults(self.decodeEvents(newEvents))
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
                 except Exception as e:
-                    self.logWarn(f"error: {type(e)}, {e}", True)
+                    self.logWarn(
+                        f"error: {type(e)}, {e}, {traceback.format_exc()}", True
+                    )
         else:
-            while self.iScanner.state:
+            while self.iScanner.state == 2:
                 try:
-                    lastBlock = self.iScanner.lastBlock
-                    self.logInfo(f"request new events from {lastBlock}")
-                    self.filterParams = self.getFilter(lastBlock, lastBlock + 5)
+                    self.iScanner.checkSyncRequest(self)
+                    start = self.iScanner.start
+                    self.logInfo(f"request new events from {start}")
+                    self.filterParams = self.getFilter(start, start + 5)
                     startTime = time.time()
                     newEvents = self.w3.eth.get_logs(self.filterParams)
                     if len(newEvents) > 0:
                         self.logInfo(f"updating results with {len(newEvents)}")
-                        self.currentResults.update(self.decodeEvents(newEvents))
+                        self.iScanner.addResults(self.decodeEvents(newEvents))
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
                 except Exception as e:
-                    self.logWarn(f"error: {type(e)}, {e}", True)
+                    self.logWarn(
+                        f"error: {type(e)}, {e}, {traceback.format_exc()}", True
+                    )
 
     def decodeEvents(self, events):
         decodedEvents = []
@@ -269,7 +279,10 @@ class RPC(Logger):
             elif e.args[0]["message"] == "rate limit exceeded":
                 self.logInfo(f"rate limited trying again")
             else:
-                self.logWarn(f"unhandled error {type(e), e} splitting jobs", True)
+                self.logWarn(
+                    f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
+                    True,
+                )
                 self.splitJob(2)
         elif type(e) == asyncio.exceptions.TimeoutError:
             self.logInfo(f"timeout error, splitting jobs")
