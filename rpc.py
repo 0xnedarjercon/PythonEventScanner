@@ -6,16 +6,13 @@ import re
 from logger import Logger
 import math
 import asyncio
-import copy
-import threading
 import traceback
 
 
 def getW3(cfg):
     apiURL = cfg["APIURL"]
-    timeout = cfg["TIMEOUT"]
     if apiURL[0:3] == "wss":
-        provider = Web3.WebsocketProvider(apiURL, websocket_timeout=5)
+        provider = Web3.WebsocketProvider(apiURL)
         webSocket = True
     elif apiURL[0:4] == "http":
         provider = Web3.HTTPProvider(apiURL)
@@ -86,12 +83,10 @@ class RPC(Logger):
         self, rpcSettings, iScanner, scanMode, contracts, abiLookups, configPath
     ):
         self.apiUrl = rpcSettings["APIURL"]
-        super().__init__(self.apiUrl, rpcSettings, configPath)
+        super().__init__(self.apiUrl.split("./")[-1], rpcSettings["DEBUGLEVEL"])
         self.w3, self.websocket = getW3(rpcSettings)
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
-        self.throttleFactor = rpcSettings["THROTTLEFACTOR"]
-        self.throttleAmount = rpcSettings["THROTTLEAMOUNT"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
         self.pollInterval = rpcSettings["POLLINTERVAL"]
         self.iScanner = iScanner
@@ -120,8 +115,8 @@ class RPC(Logger):
         while self.iScanner.state == 1:
             self.iScanner.checkSyncRequest(self)
             if len(self.jobs) == 0:
-                newJob = self.iScanner.getJob(self.currentChunkSize)
-                if newJob != []:
+                newJob = self.iScanner.getScanJob(self.currentChunkSize)
+                if newJob != [] and newJob[0] != newJob[1]:
                     self.jobs.append(newJob)
                     self.logInfo(f"job added: {self.jobs} ")
             else:
@@ -129,7 +124,7 @@ class RPC(Logger):
                     job = self.nextJob()
                     self.logInfo(f"starting job {job}")
                     events = self.scanChunk(job[0], job[1])
-                    self.iScanner.addResults(
+                    self.iScanner.addScanResults(
                         [job[0], self.decodeEvents(events), job[1]]
                     )
                     self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
@@ -155,8 +150,8 @@ class RPC(Logger):
                     self.logInfo("request latest events")
                     newEvents = self.filterParams.get_new_entries()
                     if len(newEvents) > 0:
-                        self.logInfo(f"updating results with {len(newEvents)}")
-                        self.iScanner.addResults(self.decodeEvents(newEvents))
+                        self.logInfo(f"updating results with {len(newEvents)} events")
+                        self.iScanner.addLiveResults(self.decodeEvents(newEvents))
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
@@ -174,8 +169,10 @@ class RPC(Logger):
                     startTime = time.time()
                     newEvents = self.w3.eth.get_logs(self.filterParams)
                     if len(newEvents) > 0:
-                        self.logInfo(f"updating results with {len(newEvents)}")
-                        self.iScanner.addResults(self.decodeEvents(newEvents))
+                        self.logInfo(
+                            f"updating results with {len(newEvents)} new events"
+                        )
+                        self.iScanner.addLiveResults(self.decodeEvents(newEvents))
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
@@ -209,7 +206,7 @@ class RPC(Logger):
 
     def nextJob(self):
         length = self.jobs[0][1] - self.jobs[0][0]
-        if length > self.currentChunkSize + 2:
+        if length > self.currentChunkSize + 1:
             self.logInfo(
                 f"existing job too big, splitting {length}, {self.currentChunkSize}"
             )
@@ -243,6 +240,7 @@ class RPC(Logger):
             ratio = self.eventsTarget / (len(events))
             targetBlocks = math.ceil(ratio * blockRange)
             self.currentChunkSize = targetBlocks
+            self.currentChunkSize = max(self.currentChunkSize, 1)
 
     def getFactor(self, current, target):
         factor = 1
@@ -278,6 +276,9 @@ class RPC(Logger):
 
             elif e.args[0]["message"] == "rate limit exceeded":
                 self.logInfo(f"rate limited trying again")
+            elif "response size should not greater than" in e.args[0]["message"]:
+                self.logInfo(f"too much data, splitting job, {e}")
+                self.splitJob(2)
             else:
                 self.logWarn(
                     f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
@@ -288,12 +289,15 @@ class RPC(Logger):
             self.logInfo(f"timeout error, splitting jobs")
             self.splitJob(2)
         else:
-            self.logWarn(f"unhandled error {type(e), e} splitting jobs", True)
+            self.logWarn(
+                f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
+                True,
+            )
             self.splitJob(2)
 
     def splitJob(self, numJobs, reduceChunkSize=True):
         oldJob = self.jobs[0]
-        chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs) + 1
+        chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs)
         if reduceChunkSize:
             self.currentChunkSize = chunkSize
         current = oldJob[0]

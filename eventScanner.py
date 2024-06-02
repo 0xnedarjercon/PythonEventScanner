@@ -4,9 +4,9 @@ import threading
 import json
 from tqdm import tqdm
 import os
-from logger import Logger
+from logger import Logger, startListener
 import multiprocessing
-import copy
+from configLoader import scanSettings, rpcSettings, configPath, rpcInterfaceSettings
 from scannerRpcInterface import ScannerRPCInterface
 import atexit
 
@@ -59,19 +59,15 @@ def processEvents(event):
 class EventScanner(Logger):
 
     def __init__(self):
-        self.iRpc = ScannerRPCInterface()
-        folderPath = os.getenv("FOLDER_PATH")
+        startListener()
+        self.iRpc = ScannerRPCInterface(rpcInterfaceSettings)
         self.threads = []
-        self.configPath = (
-            f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
-        )
-        rpcSettings, scanSettings, fileSettings = readConfig(self.configPath)
-        super().__init__("scanner", scanSettings, self.configPath)
+        super().__init__("scanner")
         self.loadSettings(scanSettings, rpcSettings)
-        self.fileHandler = FileHandler(self, fileSettings, self.configPath)
+        self.fileHandler = FileHandler(self.startBlock)
 
     def loadSettings(self, scanSettings, rpcSettings):
-        super().__init__("scanner", scanSettings, self.configPath)
+        super().__init__("scanner", scanSettings["DEBUGLEVEL"])
         self.scanMode = scanSettings["MODE"]
         self.events = scanSettings["EVENTS"]
         self.loadAbis()
@@ -79,7 +75,6 @@ class EventScanner(Logger):
         self.initRpcs(rpcSettings)
         if scanSettings["STARTBLOCK"] == "current":
             self.startBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
-
         else:
             self.startBlock = scanSettings["STARTBLOCK"]
         if scanSettings["ENDBLOCK"] == "current":
@@ -103,10 +98,10 @@ class EventScanner(Logger):
 
     def loadAbis(self):
         self.abis = {}
-        files = os.listdir(self.configPath + "ABIs/")
+        files = os.listdir(configPath + "ABIs/")
         for file in files:
             if file.endswith(".json"):
-                self.abis[file[:-5]] = json.load(open(self.configPath + "ABIs/" + file))
+                self.abis[file[:-5]] = json.load(open(configPath + "ABIs/" + file))
 
     def initRpcs(self, rpcSettings):
         self.processes = []
@@ -119,7 +114,7 @@ class EventScanner(Logger):
                     self.scanMode,
                     self.contracts,
                     self.abiLookups,
-                    self.configPath,
+                    configPath,
                 ),
             )
             self.processes.append(process)
@@ -193,7 +188,7 @@ class EventScanner(Logger):
         with tqdm(total=endBlock - start) as progress_bar:
             while self.fileHandler.latest < endBlock:
                 prevStart = start
-                results = self.iRpc.getResults()
+                results = self.iRpc.readScanResults()
                 for result in results:
                     self.fileHandler.process(result)
                     currentBlock = result[2]
@@ -214,6 +209,7 @@ class EventScanner(Logger):
             f"average {(endBlock-start)/(time.time()-startTime)} blocks per second",
             True,
         )
+        self.fileHandler.save()
         return endBlock
 
     def scan(self, storeResults=False, callback=None, resultsOut=None):
@@ -231,12 +227,17 @@ class EventScanner(Logger):
             )
             self.scanLive(
                 resultsOut,
-                storeResults,
                 callback,
+                storeResults,
             )
         self.teardown()
 
-    def scanLive(self, resultsOut=None, storeResults=True, callback=None):
+    def scanLive(
+        self,
+        resultsOut=None,
+        callback=None,
+        storeResults=True,
+    ):
         if callback == None and resultsOut == None and not storeResults:
             self.logWarn("data not being stored or used during livescan", True)
         self.iRpc.state = 2
@@ -244,30 +245,12 @@ class EventScanner(Logger):
         if resultsOut == None:
             resultsOut = {}
         while True:
-            resultsOut.update(self.iRpc.getResults())
+            resultsOut.update(self.iRpc.getLiveResults())
             if callback != None:
-                self.callback(resultsOut)
+                callback(resultsOut)
             if storeResults:
                 self.fileHandler.process(resultsOut)
             resultsOut.clear()
-
-            # if len(results) > 0:
-
-            #     if len(rpc.currentResults) > 0:
-            #         result = copy.deepcopy(rpc.currentResults)
-            #         self.lastBlock = max([list(result.keys())[-1], self.lastBlock])
-            #         self.logInfo(f"lastBlock updated to {self.lastBlock}")
-            #         if resultsOut != None:
-            #             resultsOut.append(result)
-            #             self.logInfo(f"resultsOut updated")
-            #         if callback != None:
-            #             self.logInfo(f"callback")
-            #             callback(result)
-            #         if storeResults:
-            #             self.fileHandler.addToPending(
-            #                 rpc.currentResults, startBlock, self.lastBlock
-            #             )
-            #         rpc.currentResults.clear()
 
 
 def readConfig(configPath):

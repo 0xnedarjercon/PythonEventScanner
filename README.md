@@ -10,9 +10,8 @@ Improved (I think) the throttling mechanism and made it easily configurable via 
 Autosaves and restores a backup file if needed  
 Save file on keyboard interrupt
 
-pip install web3
-pip install tqdm
+pip install -r requirements.txt
 copy template folder and rename, update config.json file to your needs explanations are in configInstructions
-Rename renameMe.env to .env and setup with new folder path
+update .env and setup with new folder path
 run the following command or directly from IDE:
-python ./scan.py
+python ./eventScanner.py

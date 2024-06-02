@@ -2,19 +2,16 @@ import os
 import json
 import time
 from logger import Logger
+from configLoader import fileSettings, configPath
 
 
 class FileHandler(Logger):
-    def __init__(self, eventScanner, fileSettings, configPath):
-        super().__init__("fileHandler", fileSettings, configPath)
-        self.es = eventScanner
+    def __init__(self, startBlock):
+        super().__init__("fileHandler", fileSettings["DEBUGLEVEL"])
         filePath = configPath + fileSettings["FILENAME"]
-        try:
-            os.mkdir(filePath)
-        except:
-            pass
+        os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
-        self.latest = 0
+        self.latest = startBlock
         self.filePath = filePath
         self.maxEntries = fileSettings["MAXENTRIES"]
         self.saveInterval = fileSettings["SAVEINTERVAL"]
@@ -44,7 +41,7 @@ class FileHandler(Logger):
             self.currentData.update(self.pending[0][1])
             self.currentData["latest"] = self.latest = self.pending[0][2]
             self.logInfo(
-                f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}"
+                f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}, latest stored: {self.latest}"
             )
             self.pending.pop(0)
 
@@ -67,14 +64,12 @@ class FileHandler(Logger):
             self.currentFile = os.path.join(self.filePath, latestFile)
             with open(self.currentFile) as f:
                 self.currentData = json.load(f)
-            if self.currentData["latest"] > self.es.startBlock:
+            if self.currentData["latest"] > self.latest:
                 self.latest = self.currentData["latest"]
                 self.logInfo(f"opened file {latestFile}")
             else:
-                self.latest = self.es.startBlock
                 latestFile = self.createNewFile()
         except:
-            self.latest = self.es.startBlock
             latestFile = self.createNewFile()
 
     def getFiles(self):
@@ -87,8 +82,3 @@ class FileHandler(Logger):
             ),
             key=lambda x: int(x[:-5]),
         )
-
-    def getEvent(self, fromBlock, toBlock, event):
-        files = self.getFiles()
-        for i in range(len(files)):
-            pass

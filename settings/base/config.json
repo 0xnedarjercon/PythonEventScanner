@@ -2,61 +2,49 @@
   "RPCSETTINGS": [
     {
       "APIURL": "https://base.llamarpc.com",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 5,
-      "DEBUGLEVEL": "INFO"
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH"
     },
     {
       "APIURL": "https://base-pokt.nodies.app",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 5,
-      "DEBUGLEVEL": "INFO"
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH"
     },
     {
       "APIURL": "wss://base.gateway.tenderly.co",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
-      "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 5,
-      "DEBUGLEVEL": "INFO"
+      "EVENTSTARGET": 300,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH"
     },
     {
       "APIURL": "https://1rpc.io/base",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
       "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 5,
-      "DEBUGLEVEL": "INFO"
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH"
     }
   ],
   "FILESETTINGS": {
     "SAVEINTERVAL": 600,
     "FILENAME": "basescan",
     "MAXENTRIES": 10000,
-    "DEBUGLEVEL": "INFO"
+    "DEBUGLEVEL": "HIGH"
   },
   "SCANSETTINGS": {
-    "STARTBLOCK": "current",
+    "STARTBLOCK": 15232703,
     "ENDBLOCK": "latest",
     "LIVETHRESHOLD": 100,
     "FORCENEW": false,
-    "DEBUGLEVEL": "INFO",
+    "DEBUGLEVEL": "HIGH",
     "CONTRACTS": {
       "0x78b3C724A2F663D11373C4a1978689271895256f": "ERC20",
       "0x1a9f461a371559f82976fa18c46a6a0d29f131d0": "AEROPAIR",
@@ -64,10 +52,10 @@
     },
     "MODE": "ANYCONTRACT",
     "EVENTS": [
-      "Approval",
-      "Burn",
-      "Transfer",
       "Sync"
     ]
+  },
+  "RPCINTERFACE": {
+    "DEBUGLEVEL": "HIGH"
   }
 }
