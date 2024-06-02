@@ -18,15 +18,7 @@ from fileHandler import FileHandler
 
 def scan():
     es = EventScanner()
-
-    # Register the cleanup function
-    atexit.register(es.teardown)
-    try:
-        es.scan()
-    except KeyboardInterrupt:
-        print("keyboard interrupt detected, saving...")
-        es.interrupt()
-    return es.fileHandler.latest
+    es.scan()
 
 
 def scanLive():
@@ -40,14 +32,6 @@ def scanLive():
     return es.fileHandler.latest
 
 
-def initRPCProcess(settings, iRpc, scanMode, contracts, abiLookups):
-    rpc = RPC(settings, iRpc, scanMode, contracts, abiLookups)
-    try:
-        rpc.run()
-    except Exception as e:
-        print(f"process failed {e}")
-
-
 def processEvents(event):
     eventName = event["name"]
     inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
@@ -59,6 +43,7 @@ def processEvents(event):
 class EventScanner(Logger):
 
     def __init__(self):
+        atexit.register(self.teardown)
         startListener()
         self.iRpc = ScannerRPCInterface(rpcInterfaceSettings)
         self.threads = []
@@ -107,14 +92,8 @@ class EventScanner(Logger):
         self.processes = []
         for rpcSetting in rpcSettings:
             process = multiprocessing.Process(
-                target=initRPCProcess,
-                args=(
-                    rpcSetting,
-                    self.iRpc,
-                    self.scanMode,
-                    self.contracts,
-                    self.abiLookups,
-                ),
+                target=self.initRPCProcess,
+                args=(rpcSetting,),
             )
             self.processes.append(process)
             process.start()
@@ -132,6 +111,19 @@ class EventScanner(Logger):
     def teardown(self):
         self.iRpc.state = -1
         self.fileHandler.save()
+
+    def initRPCProcess(self, settings):
+        rpc = RPC(
+            settings,
+            self.iRpc,
+            self.scanMode,
+            self.contracts,
+            self.abiLookups,
+        )
+        try:
+            rpc.run()
+        except Exception as e:
+            self.logCritical(f"process failed {e}")
 
     def checkRpcJobs(self, currentBlock, endBlock, maxChunkSize):
         numChunks = 0
@@ -158,25 +150,22 @@ class EventScanner(Logger):
         currentBlock,
         start,
         totalBlocks,
-        prevStart,
+        numBlocks,
         remainingTime,
     ):
         elapsedTime = time.time() - startTime
-        progress = (currentBlock - start) / totalBlocks
-        avg = (currentBlock - start) / elapsedTime + 0.1
-
-        remainingTime = (totalBlocks - (currentBlock - start)) / avg
+        avg = (self.fileHandler.latest - start) / elapsedTime + 0.1
+        remainingTime = (totalBlocks - (self.fileHandler.latest - start)) / avg
         eta = f"{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})"
         progress_bar.set_description(
-            f"Current block: {currentBlock} ETA:{eta} avg: {avg} progress: {progress*100}%"
+            f"Current block: {currentBlock} stored up to: {self.fileHandler.latest} ETA:{eta} avg: {avg} blocks/s"
         )
-        progress_bar.update(start - prevStart)
+        progress_bar.update(numBlocks)
 
     def scanFixedEnd(self, start, endBlock):
         startTime = time.time()
         totalBlocks = endBlock - start
         currentBlock = start
-        numChunks = 0
         remainingTime = 1
         self.iRpc.setScanRange(start, endBlock)
         self.iRpc.state = 1
@@ -189,7 +178,7 @@ class EventScanner(Logger):
                 prevStart = start
                 results = self.iRpc.readScanResults()
                 for result in results:
-                    self.fileHandler.process(result)
+                    numBlocks = self.fileHandler.process(result)
                     currentBlock = result[2]
                 self.updateProgress(
                     progress_bar,
@@ -197,11 +186,11 @@ class EventScanner(Logger):
                     currentBlock,
                     start,
                     totalBlocks,
-                    prevStart,
+                    numBlocks,
                     remainingTime,
                 )
         self.logInfo(
-            f"Completed: Scanned blocks {start}-{self.endBlock} in {startTime-time.time()}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))} in {numChunks} chunks",
+            f"Completed: Scanned blocks {start}-{self.endBlock} in {time.time()-startTime}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))}",
             True,
         )
         self.logInfo(
@@ -212,24 +201,30 @@ class EventScanner(Logger):
         return endBlock
 
     def scan(self, storeResults=False, callback=None, resultsOut=None):
-        start = max([self.startBlock, self.fileHandler.latest])
-        if type(self.endBlock) == int:
-            self.scanFixedEnd(start, self.endBlock)
-        elif self.endBlock == "latest":
-            latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
-            while latestBlock > self.fileHandler.latest + self.liveThreshold:
-                self.logInfo(f"scanning to latest block: {latestBlock}")
-                self.scanFixedEnd(start, latestBlock)
+        try:
+            start = max([self.startBlock, self.fileHandler.latest])
+            if type(self.endBlock) == int:
+                self.scanFixedEnd(start, self.endBlock)
+            elif self.endBlock == "latest":
                 latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
-            self.logInfo(
-                f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
-            )
-            self.scanLive(
-                resultsOut,
-                callback,
-                storeResults,
-            )
-        self.teardown()
+                while latestBlock > self.fileHandler.latest + self.liveThreshold:
+                    self.logInfo(f"scanning to latest block: {latestBlock}")
+                    self.scanFixedEnd(start, latestBlock)
+                    latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
+                self.logInfo(
+                    f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
+                )
+                self.scanLive(
+                    resultsOut,
+                    callback,
+                    storeResults,
+                )
+            self.teardown()
+
+        except KeyboardInterrupt:
+            print("keyboard interrupt detected, saving...")
+            self.interrupt()
+        return self.fileHandler.latest
 
     def scanLive(
         self,

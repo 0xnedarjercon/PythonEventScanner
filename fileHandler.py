@@ -27,7 +27,7 @@ class FileHandler(Logger):
 
     def process(self, data):
         self.addToPending(data)
-        self.mergePending()
+        numBlocks = self.mergePending()
         if len(self.currentData) > self.maxEntries:
             self.save()
             self.createNewFile()
@@ -35,15 +35,19 @@ class FileHandler(Logger):
             time.time() > self.lastSave + self.saveInterval and self.currentData != None
         ):
             self.save()
+        return numBlocks
 
     def mergePending(self):
+        numBlocks = 0
         while len(self.pending) > 0 and self.pending[0][0] <= self.latest:
             self.currentData.update(self.pending[0][1])
             self.currentData["latest"] = self.latest = self.pending[0][2]
             self.logInfo(
                 f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}, latest stored: {self.latest}"
             )
+            numBlocks += self.pending[0][2] - self.pending[0][0]
             self.pending.pop(0)
+        return numBlocks
 
     def save(self):
         with open(self.currentFile, "w") as f:

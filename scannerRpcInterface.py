@@ -1,22 +1,6 @@
 import multiprocessing
 import copy
-import time
-from contextlib import contextmanager
 from logger import Logger
-
-
-class Synchronous:
-    pass
-
-
-@contextmanager
-def tryLock(lock):
-    acquired = lock.acquire(block=False)
-    try:
-        yield acquired
-    finally:
-        if acquired:
-            lock.release()
 
 
 class ScannerRPCInterface(Logger):
