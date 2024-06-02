@@ -40,8 +40,8 @@ def scanLive():
     return es.fileHandler.latest
 
 
-def initRPCProcess(settings, iRpc, scanMode, contracts, abiLookups, configPath):
-    rpc = RPC(settings, iRpc, scanMode, contracts, abiLookups, configPath)
+def initRPCProcess(settings, iRpc, scanMode, contracts, abiLookups):
+    rpc = RPC(settings, iRpc, scanMode, contracts, abiLookups)
     try:
         rpc.run()
     except Exception as e:
@@ -114,7 +114,6 @@ class EventScanner(Logger):
                     self.scanMode,
                     self.contracts,
                     self.abiLookups,
-                    configPath,
                 ),
             )
             self.processes.append(process)

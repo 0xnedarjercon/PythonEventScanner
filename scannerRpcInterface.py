@@ -34,7 +34,6 @@ class ScannerRPCInterface(Logger):
         self._fixedScanResults = self.manager.list()
 
         # Creating reentrant locks for each variable
-        self._state_lock = multiprocessing.RLock()
         self._lastBlock_lock = multiprocessing.RLock()
         self._start_lock = multiprocessing.RLock()
         self._end_lock = multiprocessing.RLock()
@@ -42,63 +41,75 @@ class ScannerRPCInterface(Logger):
         self._fixedScanResults_lock_condition = multiprocessing.Condition(
             self._fixedScanResult_lock
         )
-        self._sync_request_lock = multiprocessing.RLock()
-        self._sync_request_lock_condition = multiprocessing.Condition(
-            self._sync_request_lock
+        self._state_sync_request_lock = multiprocessing.RLock()
+        self._state_sync_request_lock_condition = multiprocessing.Condition(
+            self._state_sync_request_lock
         )
-        self._sync_results_lock = multiprocessing.RLock()
+        self._sync_result_lock = multiprocessing.RLock()
         self._sync_result_lock_condition = multiprocessing.Condition(
-            self._sync_results_lock
+            self._sync_result_lock
         )
         self._results_lock = multiprocessing.RLock()
         self._results_lock_condition = multiprocessing.Condition(self._results_lock)
 
     def syncRequest(self, request, args=(), kwargs={}, count=1):
         # wait for no current jobs
-        with self._sync_request_lock:
+        with self._state_sync_request_lock:
             while self.sync.request != None:
-                with self._sync_request_lock_condition:
+                with self._state_sync_request_lock_condition:
                     self.logInfo("sync request busy, waiting")
-                    self._sync_request_lock_condition.wait()
+                    self._state_sync_request_lock_condition.wait()
                 # add the request
             self.sync.request = (request, args, kwargs)
             self.sync.count = count
         self.logInfo(f"sync request set {request}")
         # wait for result
-        with self._sync_results_lock:
+        with self._sync_result_lock:
             while self.sync.result == None:
                 with self._sync_result_lock_condition:
                     self._sync_result_lock_condition.wait()
 
             # cleanup and return result
-            with self._sync_request_lock:
+            with self._state_sync_request_lock:
                 result = copy.deepcopy(self.sync.result)
                 self.sync.result = None
                 self.sync.request = None
-                self.logInfo(f"sync result received")
+                self.logInfo(f"sync result received for {request}")
+                self.logDebug(f"result: {result}")
+                with self._state_sync_request_lock_condition:
+                    self._state_sync_request_lock_condition.notify_all()
+                self.logDebug("result lock released")
                 return result
 
-    def checkSyncRequest(self, instance):
-        # make local copy of the job, skip if not available
-        with tryLock(self._sync_request_lock) as acquired:
-            if not acquired:
-                return
-            if self.sync.count == 0:
-                return
+    def checkSyncRequest(self, instance, blocking=False):
+        # make local copy of the job
+        with self._state_sync_request_lock:
+            if self.sync.count < 1:
+                if not blocking:
+                    return
+                else:
+                    with self._state_sync_request_lock_condition:
+                        self.logInfo("waiting for sync request")
+                        self._state_sync_request_lock_condition.wait()
+                        if self.sync.count < 1:
+                            return
             request = copy.deepcopy(self.sync.request)
             self.sync.count -= 1
 
         # set result and notify
-        with self._sync_results_lock:
-            self.logInfo(f"sync request received processing...")
-            result = self.call_function(instance, request[0], request[1], request[2])
-            with self._sync_results_lock:
-                self.sync.result = result
-                with self._sync_result_lock_condition:
-                    self._sync_result_lock_condition.notify_all()
-                    self.logInfo(f"sync result posted notifying...")
+        self.logInfo(f"sync request received: {request} processing...")
+        result = self.doRequest(instance, request[0], request[1], request[2])
+        with self._sync_result_lock:
+            self.logDebug("result lock locked")
+            self.sync.result = result
+            self.logDebug("getting result lock condition")
+            with self._sync_result_lock_condition:
+                self._sync_result_lock_condition.notify_all()
+                self.logInfo(f"sync result posted notifying...")
+            self.logDebug("getting result lock condition")
+        self.logDebug("result lock released")
 
-    def call_function(self, instance, request, args, kwargs):
+    def doRequest(self, instance, request, args, kwargs):
         methods = request.split(".")
         obj = instance
         for i in range(len(methods)):
@@ -107,13 +118,19 @@ class ScannerRPCInterface(Logger):
 
     @property
     def state(self):
-        with self._state_lock:
+        with self._state_sync_request_lock:
             return self._state.value
 
     @state.setter
     def state(self, value):
-        with self._state_lock:
-            self._state.value = value
+        with self._state_sync_request_lock:
+            while self.sync.request != None:
+                with self._state_sync_request_lock_condition:
+                    self._state_sync_request_lock_condition.wait()
+            with self._state_sync_request_lock:
+                self._state.value = value
+                with self._state_sync_request_lock_condition:
+                    self._state_sync_request_lock_condition.notify_all()
 
     @property
     def start(self):
@@ -190,7 +207,7 @@ class ScannerRPCInterface(Logger):
         data = {key: value for key, value in data.items() if (key) > start}
         if not data:
             return
-        latestBlock = list(data.keys())[-1]
+        latestBlock = min(list(data.keys())[-1], start)
         with self._results_lock:
             self._results.update(data)
             self.start = self.end = latestBlock

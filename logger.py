@@ -54,19 +54,20 @@ class Logger:
 
     def logDebug(self, data, display=False, trace=False):
         if self.enabled:
+            data += multiprocessing.current_process().name
             self.log.debug(data)
-        if display:
-            print(data)
-        if trace:
-            traceback.print_exc()
+            if display:
+                print(data)
+            if trace:
+                traceback.print_exc()
 
     def logInfo(self, data, display=False, trace=False):
         if self.enabled:
             self.log.info(data)
-        if display:
-            print(data)
-        if trace:
-            traceback.print_exc()
+            if display:
+                print(data)
+            if trace:
+                traceback.print_exc()
 
     def logWarn(self, data, display=True, trace=True):
         if self.enabled:

@@ -6,7 +6,10 @@
       "MAXCHUNKSIZE": "maximum block range per event poll",
       "STARTCHUNKSIZE": "starting block range",
       "EVENTSTARGET": "number of events per poll to target, block range tries to throttle to this value",
-      "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings"
+      "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings",
+      "ACTIVESTATES": [
+        "Array of the states to run in, 1 for fixed end scan and 2 for livescanning, always processes sync requests"
+      ]
     }
   ],
   "FILESETTINGS": {
@@ -28,6 +31,6 @@
     ]
   },
   "RPCINTERFACE": {
-    "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings"
+    "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings, EXTREME for debugging"
   }
 }

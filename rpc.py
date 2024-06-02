@@ -79,9 +79,7 @@ def getEventParameters(param):
 
 
 class RPC(Logger):
-    def __init__(
-        self, rpcSettings, iScanner, scanMode, contracts, abiLookups, configPath
-    ):
+    def __init__(self, rpcSettings, iScanner, scanMode, contracts, abiLookups):
         self.apiUrl = rpcSettings["APIURL"]
         super().__init__(self.apiUrl.split("./")[-1], rpcSettings["DEBUGLEVEL"])
         self.w3, self.websocket = getW3(rpcSettings)
@@ -93,6 +91,7 @@ class RPC(Logger):
         self.contracts = contracts
         self.abiLookups = abiLookups
         self.jobs = []
+        self.activeStates = rpcSettings["ACTIVESTATES"]
         self.start = 0
         self.end = 0
         self.running = True
@@ -103,12 +102,12 @@ class RPC(Logger):
         state = self.iScanner.state
         while state > -1:
             self.iScanner.checkSyncRequest(self)
-            if state == 1:
+            if state == 1 and state in self.activeStates:
                 self.runFixed()
-            elif state == 2:
+            elif state == 2 and state in self.activeStates:
                 self.runLive()
             else:
-                time.sleep(1)
+                self.iScanner.checkSyncRequest(self, blocking=True)
             state = self.iScanner.state
 
     def runFixed(self):

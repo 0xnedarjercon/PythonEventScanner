@@ -6,7 +6,11 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH"
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     },
     {
       "APIURL": "https://base-pokt.nodies.app",
@@ -14,7 +18,11 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH"
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     },
     {
       "APIURL": "wss://base.gateway.tenderly.co",
@@ -22,7 +30,10 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 300,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH"
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        2
+      ]
     },
     {
       "APIURL": "https://1rpc.io/base",
@@ -30,7 +41,11 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH"
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     }
   ],
   "FILESETTINGS": {
