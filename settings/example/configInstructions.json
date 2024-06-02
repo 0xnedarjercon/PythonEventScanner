@@ -1,136 +1,36 @@
 {
   "RPCSETTINGS": [
-    "array of dicts for each RPC with individual settings",
+    "array of dicts for each RPC with individual settings, each element will be run in a seperate process",
     {
       "APIURL": "URL of the rpc",
-      "TIMEOUT": "timeout for a request (currnetly not working)",
       "MAXCHUNKSIZE": "maximum block range per event poll",
       "STARTCHUNKSIZE": "starting block range",
-      "THROTTLEAMOUNT": "fixed block range to reduce on failures",
-      "THROTTLEFACTOR": "dividing factor to reduce block range on failures",
       "EVENTSTARGET": "number of events per poll to target, block range tries to throttle to this value",
-      "DEBUG": "whether to add debug info to app.log for this rpc"
+      "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings",
+      "ACTIVESTATES": [
+        "Array of the states to run in, 1 for fixed end scan and 2 for livescanning, always processes sync requests"
+      ]
     }
   ],
   "FILESETTINGS": {
-    "SAVEINTERVAL": "how often to svae the current data",
+    "SAVEINTERVAL": "how often to autosave the current data in seconds",
     "FILENAME": "folder name of where to store the data under settings",
     "MAXENTRIES": "maximum number of entries to store per file"
   },
   "SCANSETTINGS": {
-    "STARTBLOCK": "block to start scanning from",
-    "ENDBLOCK": "block to start scanning to",
-    "FORCENEW": "whether to force new scan, ignoring previously saved data",
-    "DEBUG": "whether to add debug info to app.log for the event scanner",
+    "STARTBLOCK": "block to start scanning from, either a number or current",
+    "ENDBLOCK": "block to start scanning to, either a number, current or latest",
+    "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings",
     "CONTRACTS": {
-      "contract addresses to scan": "name of contract abi in abi folder",
+      "contract addresses to scan": "name of contract abi in abi folder e.g:",
       "0x78b3C724A2F663D11373C4a1978689271895256f": "TOKEN"
     },
     "MODE": "ANYEVENT: all events from the contract addresses, ANYCONTRACT: events matching signiature from any contract ",
     "EVENTS": [
-      "name of events per abis to scan for if using ANYCONTRACT"
-    ],
-    "ABI": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "Approval",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount0",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount1",
-            "type": "uint256"
-          }
-        ],
-        "name": "Burn",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "from",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "Transfer",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "reserve0",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "reserve1",
-            "type": "uint256"
-          }
-        ],
-        "name": "Sync",
-        "type": "event"
-      }
+      "name of events to scan for if using ANYCONTRACT, will check all abis for matching name"
     ]
+  },
+  "RPCINTERFACE": {
+    "DEBUGLEVEL": "level of logging info to be stored, HIGH for execution info or NORMAL for only warnings, EXTREME for debugging"
   }
 }

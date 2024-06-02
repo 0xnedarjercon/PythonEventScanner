@@ -2,58 +2,75 @@
   "RPCSETTINGS": [
     {
       "APIURL": "https://base.llamarpc.com",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 500,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
-      "EVENTSTARGET": 1400,
-      "DEBUG": false
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 2000,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     },
     {
       "APIURL": "https://base-pokt.nodies.app",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 500,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
-      "EVENTSTARGET": 1400,
-      "DEBUG": false
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 2000,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     },
     {
       "APIURL": "wss://base.gateway.tenderly.co",
-      "TIMEOUT": 5,
       "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 500,
-      "THROTTLEAMOUNT": 100,
-      "THROTTLEFACTOR": 1.2,
-      "EVENTSTARGET": 1400,
-      "DEBUG": false
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 300,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        2
+      ]
+    },
+    {
+      "APIURL": "https://1rpc.io/base",
+      "MAXCHUNKSIZE": 30000,
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 2000,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "HIGH",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
     }
   ],
   "FILESETTINGS": {
     "SAVEINTERVAL": 600,
-    "FILENAME": "basescan4",
+    "FILENAME": "basescan",
     "MAXENTRIES": 10000,
-    "DEBUG": false
+    "DEBUGLEVEL": "HIGH"
   },
   "SCANSETTINGS": {
-    "STARTBLOCK": 14376940,
-    "ENDBLOCK": 14628979,
+    "STARTBLOCK": 15232703,
+    "ENDBLOCK": "latest",
+    "LIVETHRESHOLD": 100,
     "FORCENEW": false,
-    "DEBUG": false,
+    "DEBUGLEVEL": "HIGH",
     "CONTRACTS": {
       "0x78b3C724A2F663D11373C4a1978689271895256f": "ERC20",
       "0x1a9f461a371559f82976fa18c46a6a0d29f131d0": "AEROPAIR",
       "0xd88b9f7185f404015b665e070a5ef03a7e26661f": "AEROPAIR"
     },
-    "DEBUGLEVEL": "INFO",
-    "MODE": "ANYEVENT",
+    "MODE": "ANYCONTRACT",
     "EVENTS": [
-      "Approval",
-      "Burn",
-      "Transfer",
       "Sync"
     ]
+  },
+  "RPCINTERFACE": {
+    "DEBUGLEVEL": "HIGH"
   }
 }

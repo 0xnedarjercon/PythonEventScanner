@@ -2,22 +2,16 @@ import os
 import json
 import time
 from logger import Logger
+from configLoader import fileSettings, configPath
 
 
 class FileHandler(Logger):
-    def __init__(self, eventScanner, fileSettings, debugLevel):
-        super().__init__("fileHandler", fileSettings["DEBUG"])
-
-        self.es = eventScanner
-        filePath = self.es.configPath + self.getFileString(fileSettings)
-        Logger.initLog(f"{filePath}", debugLevel)
-        try:
-            os.mkdir(filePath)
-        except:
-            pass
-
+    def __init__(self, startBlock):
+        super().__init__("fileHandler", fileSettings["DEBUGLEVEL"])
+        filePath = configPath + fileSettings["FILENAME"]
+        os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
-        self.latest = 0
+        self.latest = startBlock
         self.filePath = filePath
         self.maxEntries = fileSettings["MAXENTRIES"]
         self.saveInterval = fileSettings["SAVEINTERVAL"]
@@ -31,9 +25,9 @@ class FileHandler(Logger):
         self.save()
         self.logInfo(f"new file created starting {self.latest}")
 
-    def process(self, data, startBlock, lastBlock):
-        self.addToPending([startBlock, data, lastBlock])
-        self.mergePending()
+    def process(self, data):
+        self.addToPending(data)
+        numBlocks = self.mergePending()
         if len(self.currentData) > self.maxEntries:
             self.save()
             self.createNewFile()
@@ -41,30 +35,19 @@ class FileHandler(Logger):
             time.time() > self.lastSave + self.saveInterval and self.currentData != None
         ):
             self.save()
-
-    def getFileString(self, fileSettings):
-        if fileSettings["FILENAME"] == "":
-            startBlock = self.startBlock
-            endBlock = self.endBlock
-            if self.es.mode == "ANYEVENT":
-                contracts = list(self.es.contracts.keys())
-                fileString = (
-                    f"Block {startBlock} to {endBlock} contracts {','.join(contracts)}"
-                )
-            elif self.es.mode == "ANYCONTRACT":
-                fileString = f"Block {startBlock} to {endBlock} events {','.join(self.es.events)}"
-        else:
-            fileString = fileSettings["FILENAME"]
-        return fileString
+        return numBlocks
 
     def mergePending(self):
+        numBlocks = 0
         while len(self.pending) > 0 and self.pending[0][0] <= self.latest:
             self.currentData.update(self.pending[0][1])
             self.currentData["latest"] = self.latest = self.pending[0][2]
             self.logInfo(
-                f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}"
+                f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}, latest stored: {self.latest}"
             )
+            numBlocks += self.pending[0][2] - self.pending[0][0]
             self.pending.pop(0)
+        return numBlocks
 
     def save(self):
         with open(self.currentFile, "w") as f:
@@ -85,14 +68,12 @@ class FileHandler(Logger):
             self.currentFile = os.path.join(self.filePath, latestFile)
             with open(self.currentFile) as f:
                 self.currentData = json.load(f)
-            if self.currentData["latest"] > self.es.startBlock:
+            if self.currentData["latest"] > self.latest:
                 self.latest = self.currentData["latest"]
                 self.logInfo(f"opened file {latestFile}")
             else:
-                self.latest = self.es.startBlock
                 latestFile = self.createNewFile()
         except:
-            self.latest = self.es.startBlock
             latestFile = self.createNewFile()
 
     def getFiles(self):
@@ -105,8 +86,3 @@ class FileHandler(Logger):
             ),
             key=lambda x: int(x[:-5]),
         )
-
-    def getEvent(self, fromBlock, toBlock, event):
-        files = self.getFiles()
-        for i in range(len(files)):
-            pass
