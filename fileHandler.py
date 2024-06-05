@@ -5,31 +5,57 @@ from logger import Logger
 from configLoader import fileSettings, configPath
 
 
+# currently assumes all files stored are sequential
 class FileHandler(Logger):
-    def __init__(self, startBlock):
+    def __init__(self):
         super().__init__("fileHandler", fileSettings["DEBUGLEVEL"])
-        filePath = configPath + fileSettings["FILENAME"]
+        filePath = configPath + fileSettings["FILENAME"]+'/'
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
-        self.latest = startBlock
+        self.start = 0
         self.filePath = filePath
         self.maxEntries = fileSettings["MAXENTRIES"]
         self.saveInterval = fileSettings["SAVEINTERVAL"]
         self.pending = []
-        self.openLatest()
+        self.maxBlock = 0
+        self.next = None
         self.lastSave = time.time()
 
-    def createNewFile(self):
-        self.currentFile = os.path.join(self.filePath, str(self.latest) + ".json")
-        self.currentData = {"latest": self.latest}
-        self.save()
-        self.logInfo(f"new file created starting {self.latest}")
+    def createNewFile(self, startBlock = None):
+        if startBlock is None:
+            startBlock=self.latest
+        self.start = self.latest =startBlock 
 
+        self.currentFile = (self.start,self.latest)
+        self.currentData = {}
+        self.logInfo(f"new file created starting {self.latest}")
+    
+    @property
+    def currentFileName(self):
+        return f'{self.currentFile[0]}.{self.currentFile[1]}.json'
+    
+    def save(self, deleteOld=True, indent = None):
+        if self.start != self.latest:
+            newName = f'{self.start}.{self.latest}.json'
+            with open(self.filePath+newName, "w") as f:
+                f.write(json.dumps(self.currentData, indent=indent))
+            if deleteOld and newName != self.currentFileName:
+                self.logDebug(f'deleting {self.currentFileName}')
+                try:
+                    os.remove(self.filePath+self.currentFileName)
+                except FileNotFoundError as e:
+                    self.logDebug('filenotfound error deleting {e}')
+            self.currentFile = (self.start, self.latest)
+            self.lastSave = time.time()
+            self.logInfo(f"current data saved to {self.currentFileName}")
+        else:
+            self.logDebug(f'{self.currentFileName} not saved, no changed data')
+        
     def process(self, data):
         self.addToPending(data)
         numBlocks = self.mergePending()
         if len(self.currentData) > self.maxEntries:
-            self.save()
+            self.save(indent = 4)
             self.createNewFile()
         elif (
             time.time() > self.lastSave + self.saveInterval and self.currentData != None
@@ -41,19 +67,16 @@ class FileHandler(Logger):
         numBlocks = 0
         while len(self.pending) > 0 and self.pending[0][0] <= self.latest:
             self.currentData.update(self.pending[0][1])
-            self.currentData["latest"] = self.latest = self.pending[0][2]
+            self.latest = self.pending[0][2]
             self.logInfo(
                 f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}, latest stored: {self.latest}"
             )
             numBlocks += self.pending[0][2] - self.pending[0][0]
             self.pending.pop(0)
+        self.logInfo(
+                f"waiting for: {self.latest}"
+            )
         return numBlocks
-
-    def save(self):
-        with open(self.currentFile, "w") as f:
-            f.write(json.dumps(self.currentData, indent=4))
-        self.lastSave = time.time()
-        self.logInfo("current data saved")
 
     def addToPending(self, element):
         position = 0
@@ -61,28 +84,62 @@ class FileHandler(Logger):
             position += 1
         self.pending.insert(position, element)
         self.logInfo(f"data added to pending {element[0]} to {element[2]}")
-
-    def openLatest(self):
-        try:
-            latestFile = self.getFiles()[-1]
-            self.currentFile = os.path.join(self.filePath, latestFile)
-            with open(self.currentFile) as f:
-                self.currentData = json.load(f)
-            if self.currentData["latest"] > self.latest:
-                self.latest = self.currentData["latest"]
-                self.logInfo(f"opened file {latestFile}")
-            else:
-                latestFile = self.createNewFile()
-        except:
-            latestFile = self.createNewFile()
-
+        
     def getFiles(self):
         all_files = os.listdir(self.filePath)
-        return sorted(
-            (
-                file
-                for file in all_files
-                if file.endswith(".json") and file[:-5].isdigit()
-            ),
-            key=lambda x: int(x[:-5]),
-        )
+        json_files = [
+            (int(start), int(end))
+            for file in all_files
+            if file.endswith(".json")
+            for start, end in [file.rsplit('.', 2)[:2]]
+        ]
+        return sorted(json_files, key=lambda x: x[0])
+                
+    def getLatestFileFrom(self, startBlock):
+        fileTuples = self.getFiles()
+        fileEnd = startBlock
+        for i, fileTuple in enumerate(fileTuples):
+            if fileEnd == startBlock  and startBlock >= fileTuple[0]:
+                fileEnd = fileTuple[1]
+            if fileEnd != startBlock:
+                if i + 1 == len(fileTuples):
+                    if startBlock> fileTuple[1]:
+                        return None
+                    return fileTuple
+                if fileEnd != fileTuples[i + 1][0]:
+                    return fileTuples[i + 1]
+        return None
+    
+    def toFileName(self, value):
+        return f'{value[0]}.{value[1]}.json'
+    
+    def loadFile(self, file):
+        with open(f'{self.filePath}{file}') as f:
+            return json.load(f)
+        
+    def setup(self, startBlock):
+        self.logInfo(f'setting up new scan')
+        if self.currentFile != None:
+            self.save(indent = 4)
+        self.createNewFile(startBlock)
+        self.logDebug(f'setup complete, {self.currentFile} waiting for {self.latest}')
+        return self.latest
+
+        
+    def checkMissing(self, start, end):
+        files = self.getFiles()
+        missing = []
+        i=0
+        while start < end and i < len(files):
+            if files[i][0]>start:
+                missing.append((start, files[i][0]))
+            start = files[i][1]
+            i+=1
+        if start< end:
+            missing.append((start, end))
+        self.logDebug(f'missing files: {missing}')
+        return missing
+
+
+
+

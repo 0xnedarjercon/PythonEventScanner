@@ -14,10 +14,12 @@ class ScannerRPCInterface(Logger):
         self.sync.request = None
         self.sync.result = None
         self.sync.count = 0
+        self._fixedScanRequests = self.manager.list()
         self._results = self.manager.dict()
         self._fixedScanResults = self.manager.list()
 
         # Creating reentrant locks for each variable
+        self._fixedScanRequests_lock = multiprocessing.RLock()
         self._lastBlock_lock = multiprocessing.RLock()
         self._start_lock = multiprocessing.RLock()
         self._end_lock = multiprocessing.RLock()
@@ -73,8 +75,9 @@ class ScannerRPCInterface(Logger):
                     return
                 else:
                     with self._state_sync_request_lock_condition:
-                        self.logInfo("waiting for sync request")
+                        self.logDebug("waiting for sync request")
                         self._state_sync_request_lock_condition.wait()
+                        self.logDebug("finished waiting for sync request")
                         if self.sync.count < 1:
                             return
             request = copy.deepcopy(self.sync.request)
@@ -136,25 +139,26 @@ class ScannerRPCInterface(Logger):
         with self._end_lock:
             self._end.value = value
 
-    def setScanRange(self, start, end):
-        with self._start_lock:
-            self._start.value = start
-        with self._end_lock:
-            self._end.value = end
+    def addScanRange(self, start, end):
+        with self._fixedScanRequests_lock:
+            self._fixedScanRequests.insert(0, [start, end])
+
 
     def getScanJob(self, maxSize):
-        with self._start_lock:
-            with self._end_lock:
-                if (self._end.value) != 0 and self._end.value != self._start.value:
-                    startBlock = self._start.value
-                    endBlock = min([startBlock + maxSize, self._end.value])
-                    self._start.value = endBlock
-                    self.logInfo(
-                        f"distributed job, remaining range: {self._start.value} - {self._end.value}"
-                    )
-                    return (startBlock, endBlock)
-                else:
-                    return []
+        with self._fixedScanRequests_lock:
+            if len(self._fixedScanRequests) == 0 or self._fixedScanRequests[0][0] == 0:
+                return []
+            while len(self._fixedScanRequests) == 0 and self._fixedScanRequests[0][0] == self._fixedScanRequests[0][1]:
+                
+                self._fixedScanRequests.pop(0)
+            startBlock = self._fixedScanRequests[0][0]
+            endBlock = min([startBlock + maxSize, self._fixedScanRequests[0][1]])
+            self._fixedScanRequests[0] = (endBlock, self._fixedScanRequests[0][1])
+            self.logDebug(
+                f"distributed job {(startBlock, endBlock)}, remaining range: {self._fixedScanRequests[0][0]} - {self._fixedScanRequests[0][1]}"
+            )
+            return (startBlock, endBlock)
+
 
     def addScanResults(self, result):
         with self._fixedScanResult_lock:
@@ -163,14 +167,17 @@ class ScannerRPCInterface(Logger):
                 self.logInfo(f"scan results added, blocks {result[0]}-{result[2]}")
                 self._fixedScanResults_lock_condition.notify_all()
 
-    def readScanResults(self):
+    def readScanResults(self, blocking = True):
         with self._fixedScanResult_lock:
             while len(self._fixedScanResults) == 0:
-                with self._fixedScanResults_lock_condition:
-                    self._fixedScanResults_lock_condition.wait()
+                if blocking:
+                    with self._fixedScanResults_lock_condition:
+                        self._fixedScanResults_lock_condition.wait()
+                else:
+                    return []
             results = copy.deepcopy(self._fixedScanResults)
+            self.logInfo(f"scan results read and cleared, blocks")
             self._fixedScanResults[:] = []
-            self.logInfo(f"scan results read and cleared")
             return results
 
     def getLiveResults(self, blocking=True):

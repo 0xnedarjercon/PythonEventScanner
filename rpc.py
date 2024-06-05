@@ -91,16 +91,17 @@ class RPC(Logger):
         self.contracts = contracts
         self.abiLookups = abiLookups
         self.jobs = []
+        self.failCount = 0
         self.activeStates = rpcSettings["ACTIVESTATES"]
         self.start = 0
         self.end = 0
         self.running = True
         self.scanMode = scanMode
-        self.logInfo(f"logging enabled")
+        self.logDebug(f"logging enabled")
 
     def run(self):
         state = self.iScanner.state
-        while state > -1:
+        while state > -1 and self.running == True:
             self.iScanner.checkSyncRequest(self)
             if state == 1 and state in self.activeStates:
                 self.runFixed()
@@ -113,27 +114,31 @@ class RPC(Logger):
     def runFixed(self):
         while self.iScanner.state == 1:
             self.iScanner.checkSyncRequest(self)
-            if len(self.jobs) == 0:
-                newJob = self.iScanner.getScanJob(self.currentChunkSize)
-                if newJob != [] and newJob[0] != newJob[1]:
-                    self.jobs.append(newJob)
-                    self.logInfo(f"job added: {self.jobs} ")
-            else:
-                try:
-                    job = self.nextJob()
-                    self.logInfo(f"starting job {job}")
-                    events = self.scanChunk(job[0], job[1])
-                    self.iScanner.addScanResults(
-                        [job[0], self.decodeEvents(events), job[1]]
-                    )
-                    self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
-                    self.logInfo(
-                        f"processed events: {len(events)}, from {self.jobs[0][0]} to {self.jobs[0][1]} ({self.jobs[0][1]-self.jobs[0][0]}), throttled to {self.currentChunkSize}"
-                    )
-                    self.jobs.pop(0)
-                except Exception as e:
-                    self.handleError(e)
+            self.fixedScan()
 
+    def fixedScan(self):
+        if len(self.jobs) == 0:
+            newJob = self.iScanner.getScanJob(self.currentChunkSize)
+            if newJob != [] and newJob[0] != newJob[1]:
+                self.jobs.append(newJob)
+                self.logInfo(f"job added: {self.jobs} ")
+        else:
+            try:
+                job = self.nextJob()
+                self.logInfo(f"starting job {job}")
+                events = self.scanChunk(job[0], job[1])
+                self.iScanner.addScanResults(
+                    [job[0], self.decodeEvents(events), job[1]]
+                )
+                self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
+                self.logInfo(
+                    f"processed events: {len(events)}, from {self.jobs[0][0]} to {self.jobs[0][1]} ({self.jobs[0][1]-self.jobs[0][0]}), throttled to {self.currentChunkSize}"
+                )
+                self.jobs.pop(0)
+                self.failCount = 0
+            except Exception as e:
+                self.handleError(e)
+                
     def runLive(self):
         start = self.iScanner.start
         self.logInfo(f"livescan started at block {start}")
@@ -154,6 +159,7 @@ class RPC(Logger):
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
+                        self.failCount = 0
                 except Exception as e:
                     self.logWarn(
                         f"error: {type(e)}, {e}, {traceback.format_exc()}", True
@@ -175,6 +181,7 @@ class RPC(Logger):
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
+                    self.failCount = 0
                 except Exception as e:
                     self.logWarn(
                         f"error: {type(e)}, {e}, {traceback.format_exc()}", True
@@ -247,7 +254,7 @@ class RPC(Logger):
             factor += 1
         return factor
 
-    def handleError(self, e):
+    def handleError(self, e):            
         if type(e) == ValueError:
             if e.args[0]["message"] == "block range is too wide":
                 self.maxChunk = int(self.currentChunkSize * 0.98)
@@ -275,6 +282,7 @@ class RPC(Logger):
 
             elif e.args[0]["message"] == "rate limit exceeded":
                 self.logInfo(f"rate limited trying again")
+                time.sleep(0.5)
             elif "response size should not greater than" in e.args[0]["message"]:
                 self.logInfo(f"too much data, splitting job, {e}")
                 self.splitJob(2)
@@ -284,16 +292,27 @@ class RPC(Logger):
                     True,
                 )
                 self.splitJob(2)
+                self.failCount+=1
         elif type(e) == asyncio.exceptions.TimeoutError:
             self.logInfo(f"timeout error, splitting jobs")
             self.splitJob(2)
+            self.failCount+=1
         else:
             self.logWarn(
                 f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
                 True,
             )
+            time.sleep(0.5)
             self.splitJob(2)
-
+            self.failCount+=1
+        if self.failCount == 10:
+            for job in self.jobs:
+                self.iScanner.addScanRange(job[0], job[1])
+        elif self.failCount >20:
+            for job in self.jobs:
+                self.iScanner.addScanRange(job[0], job[1])
+            self.logCritical('too many failures, rpc shutting down')
+            self.running = False
     def splitJob(self, numJobs, reduceChunkSize=True):
         oldJob = self.jobs[0]
         chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs)
@@ -301,7 +320,7 @@ class RPC(Logger):
             self.currentChunkSize = chunkSize
         current = oldJob[0]
         for i in range(numJobs):
-            self.jobs.insert(1 + i, (current, current + chunkSize))
+            self.jobs.insert(1 + i, [current, current + chunkSize])
             current += chunkSize
 
         self.logInfo(

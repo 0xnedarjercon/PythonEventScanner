@@ -12,3 +12,7 @@ fileSettings = cfg["FILESETTINGS"]
 scanSettings = cfg["SCANSETTINGS"]
 rpcSettings = cfg["RPCSETTINGS"]
 rpcInterfaceSettings = cfg["RPCINTERFACE"]
+for key, value in cfg["RPCOVERRIDE"].items():
+    if value != "":
+        for rpcSetting in rpcSettings:
+            rpcSetting[key] = value

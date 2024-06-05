@@ -6,7 +6,7 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH",
+      "DEBUGLEVEL": "EXTREME",
       "ACTIVESTATES": [
         1,
         2
@@ -18,7 +18,7 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH",
+      "DEBUGLEVEL": "EXTREME",
       "ACTIVESTATES": [
         1,
         2
@@ -30,31 +30,40 @@
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 300,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH",
+      "DEBUGLEVEL": "EXTREME",
       "ACTIVESTATES": [
         2
       ]
-    },
-    {
+    }
+  ],
+  "RPCOVERRIDE": {
+    "APIURL": "",
+    "MAXCHUNKSIZE": "",
+    "STARTCHUNKSIZE": "",
+    "EVENTSTARGET": "",
+    "POLLINTERVAL": "",
+    "DEBUGLEVEL": "",
+    "ACTIVESTATES": ""
+  },
+  "FILESETTINGS": {
+    "SAVEINTERVAL": 600,
+    "FILENAME": "basescan",
+    "MAXENTRIES": 1000,
+    "DEBUGLEVEL": "EXTREME"
+  },
+  "SCANSETTINGS": {
+    "RPC": {
+      "ENABLED": true,
       "APIURL": "https://1rpc.io/base",
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "HIGH",
+      "DEBUGLEVEL": "EXTREME",
       "ACTIVESTATES": [
-        1,
-        2
+        1
       ]
-    }
-  ],
-  "FILESETTINGS": {
-    "SAVEINTERVAL": 600,
-    "FILENAME": "basescan",
-    "MAXENTRIES": 10000,
-    "DEBUGLEVEL": "HIGH"
-  },
-  "SCANSETTINGS": {
+    },
     "STARTBLOCK": 15232703,
     "ENDBLOCK": "latest",
     "LIVETHRESHOLD": 100,
@@ -71,6 +80,6 @@
     ]
   },
   "RPCINTERFACE": {
-    "DEBUGLEVEL": "HIGH"
+    "DEBUGLEVEL": "EXTREME"
   }
 }
