@@ -146,11 +146,11 @@ class ScannerRPCInterface(Logger):
 
     def getScanJob(self, maxSize):
         with self._fixedScanRequests_lock:
-            if len(self._fixedScanRequests) == 0 or self._fixedScanRequests[0][0] == 0:
-                return []
-            while len(self._fixedScanRequests) == 0 and self._fixedScanRequests[0][0] == self._fixedScanRequests[0][1]:
-                
+            while self._fixedScanRequests and self._fixedScanRequests[0][0] == self._fixedScanRequests[0][1]:
                 self._fixedScanRequests.pop(0)
+            
+            if not self._fixedScanRequests:
+                return []
             startBlock = self._fixedScanRequests[0][0]
             endBlock = min([startBlock + maxSize, self._fixedScanRequests[0][1]])
             self._fixedScanRequests[0] = (endBlock, self._fixedScanRequests[0][1])

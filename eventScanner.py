@@ -217,6 +217,7 @@ class EventScanner(Logger):
                     
     def scanMissingBlocks(self, start, end):
         missingBlocks = self.fileHandler.checkMissing(start, end)
+        self.logInfo(f'missing blocks: {missingBlocks}')
         for missingBlock in missingBlocks:
             self.fileHandler.setup(missingBlock[0])
             self.scanFixedEnd(missingBlock[0], missingBlock[1])
@@ -247,10 +248,12 @@ class EventScanner(Logger):
             print("keyboard interrupt detected, saving...")
             self.interrupt()
         return self.fileHandler.latest
-    def getEvents(self, blockRange, results = []):
-        results, missing = self.fileHandler.checkEvents(blockRange, results)
-        if missing[1]-missing[0] >0:
-            self.scanFixedEnd
+    
+    def getEvents(self, start, end, results = []):
+        self.scanMissingBlocks(start, end)
+        self.fileHandler.getEvents(start, end, results)
+        return results
+    
     def scanLive(
         self,
         resultsOut=None,

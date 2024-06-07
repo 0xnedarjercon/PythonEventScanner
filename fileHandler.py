@@ -12,11 +12,13 @@ class FileHandler(Logger):
         filePath = configPath + fileSettings["FILENAME"]+'/'
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
+        self.currentData = {}
         self.start = 0
         self.filePath = filePath
         self.maxEntries = fileSettings["MAXENTRIES"]
         self.saveInterval = fileSettings["SAVEINTERVAL"]
         self.pending = []
+        self.latest = 0
         self.maxBlock = 0
         self.next = None
         self.lastSave = time.time()
@@ -35,12 +37,12 @@ class FileHandler(Logger):
         return f'{self.currentFile[0]}.{self.currentFile[1]}.json'
     
     def save(self, deleteOld=True, indent = None):
-        if self.start != self.latest:
+        if self.currentData and self.last != self.start:
             newName = f'{self.start}.{self.latest}.json'
             with open(self.filePath+newName, "w") as f:
                 f.write(json.dumps(self.currentData, indent=indent))
             if deleteOld and newName != self.currentFileName:
-                self.logDebug(f'deleting {self.currentFileName}')
+                self.logDebug(f'deleting {self.currentFile}')
                 try:
                     os.remove(self.filePath+self.currentFileName)
                 except FileNotFoundError as e:
@@ -49,7 +51,7 @@ class FileHandler(Logger):
             self.lastSave = time.time()
             self.logInfo(f"current data saved to {self.currentFileName}")
         else:
-            self.logDebug(f'{self.currentFileName} not saved, no changed data')
+            self.logDebug(f'{self.currentFile} not saved, no changed data')
         
     def process(self, data):
         self.addToPending(data)
@@ -140,6 +142,24 @@ class FileHandler(Logger):
         self.logDebug(f'missing files: {missing}')
         return missing
 
-
+    def getEvents(self, start, end, results):
+        files = self.getFiles()
+        foundStart = False
+        for file in files:
+            if file[1] < start:
+                continue
+            data = self.loadFile(self.toFileName(file))
+            # Filter the first matching file
+            if not foundStart:
+                data = {k: v for k, v in data.items() if int(k) >= start}
+                foundStart = True
+            # Filter the last matching file
+            if file[1] > end:
+                data = {k: v for k, v in data.items() if int(k) <= end}
+                results.append(data)
+                break
+            results.append(data)
+        return results
+                
 
 

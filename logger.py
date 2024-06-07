@@ -30,7 +30,6 @@ def startListener():
 class Logger:
 
     def __init__(self, name, debugLevel="HIGH"):
-
         if debugLevel is not None and debugLevel != "NONE":
             self.log = logging.getLogger(name)
             self.log.setLevel(logConfig[debugLevel]["DEBUGLEVEL"])
@@ -79,6 +78,7 @@ class Logger:
                 traceback.print_exc()
 
     def logCritical(self, data, display=True, trace=True):
+        
         self.log.critical(data)
         if display:
             print(data)
