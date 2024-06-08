@@ -4,7 +4,7 @@ import threading
 import json
 from tqdm import tqdm
 import os
-from logger import Logger, startListener
+from logger import Logger
 import multiprocessing
 from configLoader import scanSettings, rpcSettings, configPath, rpcInterfaceSettings
 from scannerRpcInterface import ScannerRPCInterface
@@ -44,13 +44,11 @@ class EventScanner(Logger):
 
     def __init__(self):
         atexit.register(self.teardown)
-        startListener()
         self.iRpc = ScannerRPCInterface(rpcInterfaceSettings)
         super().__init__("scanner")
         self.loadSettings(scanSettings, rpcSettings)
         self.fileHandler = FileHandler()
 
-            
     def loadSettings(self, scanSettings, rpcSettings):
         super().__init__("scanner", scanSettings["DEBUGLEVEL"])
         self.scanMode = scanSettings["MODE"]
@@ -60,18 +58,23 @@ class EventScanner(Logger):
         self.initRpcs(rpcSettings)
         self.rpc = None
         if scanSettings["RPC"] is not None and scanSettings["RPC"]["ENABLED"] == True:
-            self.rpc = RPC(scanSettings["RPC"], self.iRpc, scanSettings["MODE"], self.contracts, self.abiLookups)
+            self.rpc = RPC(
+                scanSettings["RPC"],
+                self.iRpc,
+                scanSettings["MODE"],
+                self.contracts,
+                self.abiLookups,
+            )
         if scanSettings["STARTBLOCK"] == "current":
             self.startBlock = self.getCurrentBlock()
         else:
             self.startBlock = scanSettings["STARTBLOCK"]
         if scanSettings["ENDBLOCK"] == "current":
-                self.endBlock = self.getCurrentBlock()
+            self.endBlock = self.getCurrentBlock()
         else:
             self.endBlock = scanSettings["ENDBLOCK"]
         self.liveThreshold = scanSettings["LIVETHRESHOLD"]
 
-        
     def processContracts(self, contracts):
         self.contracts = {}
         self.abiLookups = {}
@@ -84,13 +87,13 @@ class EventScanner(Logger):
                     self.contracts[checksumAddress][eventSig] = entry
                     if entry["name"] in self.events:
                         self.abiLookups[eventSig] = {topicCount: entry}
-                        
+
     def getCurrentBlock(self):
         if self.rpc:
             return self.rpc.w3.eth.get_block_number()
         else:
             return self.iRpc.syncRequest("w3.eth.get_block_number")
-        
+
     def loadAbis(self):
         self.abis = {}
         files = os.listdir(configPath + "ABIs/")
@@ -135,7 +138,6 @@ class EventScanner(Logger):
         except Exception as e:
             self.logCritical(f"process failed {e}")
 
-
     def updateProgress(
         self,
         progress_bar,
@@ -166,7 +168,7 @@ class EventScanner(Logger):
         )
         with tqdm(total=endBlock - start) as progress_bar:
             while self.fileHandler.latest < endBlock:
-                numBlocks=0
+                numBlocks = 0
                 if self.rpc:
                     self.rpc.fixedScan()
                     results = self.iRpc.readScanResults(False)
@@ -193,36 +195,35 @@ class EventScanner(Logger):
         )
         self.fileHandler.save()
         return endBlock
-    
-    def scanBlocks(self, start=None, end=None, resultsOut=None, callback=None, storeResults=True):
+
+    def scanBlocks(
+        self, start=None, end=None, resultsOut=None, callback=None, storeResults=True
+    ):
         if start is None:
             start = self.startBlock
         if end is None:
             end = self.endBlock
         if resultsOut is None:
             resultsOut = {}
-        if end == 'current':
+        if end == "current":
             end = self.getBlockNumber()
         if isinstance(end, int):
             self.scanMissingBlocks(start, end)
             return
         else:
             while True:
-                _end = self.getBlockNumber()
+                _end = self.getCurrentBlock()
                 self.scanMissingBlocks(start, _end)
                 if self.fileHandler.latest >= _end - self.liveThreshold:
                     self.scanLive(resultsOut, callback, storeResults)
-            
-        
-                    
+
     def scanMissingBlocks(self, start, end):
         missingBlocks = self.fileHandler.checkMissing(start, end)
-        self.logInfo(f'missing blocks: {missingBlocks}')
+        self.logInfo(f"missing blocks: {missingBlocks}")
         for missingBlock in missingBlocks:
             self.fileHandler.setup(missingBlock[0])
             self.scanFixedEnd(missingBlock[0], missingBlock[1])
 
-            
     def scan(self, storeResults=False, callback=None, resultsOut=None):
         try:
             start = max([self.startBlock, self.fileHandler.latest])
@@ -248,12 +249,12 @@ class EventScanner(Logger):
             print("keyboard interrupt detected, saving...")
             self.interrupt()
         return self.fileHandler.latest
-    
-    def getEvents(self, start, end, results = []):
+
+    def getEvents(self, start, end, results=[]):
         self.scanMissingBlocks(start, end)
         self.fileHandler.getEvents(start, end, results)
         return results
-    
+
     def scanLive(
         self,
         resultsOut=None,

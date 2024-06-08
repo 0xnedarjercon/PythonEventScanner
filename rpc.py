@@ -7,6 +7,7 @@ from logger import Logger
 import math
 import asyncio
 import traceback
+from hardhat import runHardhat
 
 
 def getW3(cfg):
@@ -81,8 +82,12 @@ def getEventParameters(param):
 class RPC(Logger):
     def __init__(self, rpcSettings, iScanner, scanMode, contracts, abiLookups):
         self.apiUrl = rpcSettings["APIURL"]
-        super().__init__(self.apiUrl.split("./")[-1], rpcSettings["DEBUGLEVEL"])
-        self.w3, self.websocket = getW3(rpcSettings)
+        super().__init__(rpcSettings["NAME"], rpcSettings["DEBUGLEVEL"])
+        self.isHH = False
+        if type(rpcSettings["APIURL"]) == dict:
+            self.initHREW3(rpcSettings["APIURL"])
+        else:
+            self.w3, self.websocket = getW3(rpcSettings)
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
@@ -98,6 +103,16 @@ class RPC(Logger):
         self.running = True
         self.scanMode = scanMode
         self.logDebug(f"logging enabled")
+
+    def initHREW3(self, HRESettings):
+        self.hh = runHardhat(HRESettings)
+        if "--port" in HRESettings:
+            port = f'http://127.0.0.1:{HRESettings["port"]}'
+        else:
+            port = "http://127.0.0.1:8454"
+        self.w3, self.websocket = getW3({"APIURL": port})
+        self.isHH = True
+        self.logInfo(f"hardhat running on port {port}", True)
 
     def run(self):
         state = self.iScanner.state
@@ -138,7 +153,7 @@ class RPC(Logger):
                 self.failCount = 0
             except Exception as e:
                 self.handleError(e)
-                
+
     def runLive(self):
         start = self.iScanner.start
         self.logInfo(f"livescan started at block {start}")
@@ -254,7 +269,7 @@ class RPC(Logger):
             factor += 1
         return factor
 
-    def handleError(self, e):            
+    def handleError(self, e):
         if type(e) == ValueError:
             if e.args[0]["message"] == "block range is too wide":
                 self.maxChunk = int(self.currentChunkSize * 0.98)
@@ -292,11 +307,11 @@ class RPC(Logger):
                     True,
                 )
                 self.splitJob(2)
-                self.failCount+=1
+                self.failCount += 1
         elif type(e) == asyncio.exceptions.TimeoutError:
             self.logInfo(f"timeout error, splitting jobs")
             self.splitJob(2)
-            self.failCount+=1
+            self.failCount += 1
         else:
             self.logWarn(
                 f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
@@ -304,15 +319,16 @@ class RPC(Logger):
             )
             time.sleep(0.5)
             self.splitJob(2)
-            self.failCount+=1
+            self.failCount += 1
         if self.failCount == 10:
             for job in self.jobs:
                 self.iScanner.addScanRange(job[0], job[1])
-        elif self.failCount >20:
+        elif self.failCount > 20:
             for job in self.jobs:
                 self.iScanner.addScanRange(job[0], job[1])
-            self.logCritical('too many failures, rpc shutting down')
+            self.logCritical("too many failures, rpc shutting down")
             self.running = False
+
     def splitJob(self, numJobs, reduceChunkSize=True):
         oldJob = self.jobs[0]
         chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs)

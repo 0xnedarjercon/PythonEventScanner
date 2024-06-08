@@ -17,7 +17,6 @@ class ScannerRPCInterface(Logger):
         self._fixedScanRequests = self.manager.list()
         self._results = self.manager.dict()
         self._fixedScanResults = self.manager.list()
-
         # Creating reentrant locks for each variable
         self._fixedScanRequests_lock = multiprocessing.RLock()
         self._lastBlock_lock = multiprocessing.RLock()
@@ -37,6 +36,9 @@ class ScannerRPCInterface(Logger):
         )
         self._results_lock = multiprocessing.RLock()
         self._results_lock_condition = multiprocessing.Condition(self._results_lock)
+
+    def asyncRequest(self, request, args=(), kwarg={}, count=1):
+        pass
 
     def syncRequest(self, request, args=(), kwargs={}, count=1):
         # wait for no current jobs
@@ -143,12 +145,14 @@ class ScannerRPCInterface(Logger):
         with self._fixedScanRequests_lock:
             self._fixedScanRequests.insert(0, [start, end])
 
-
     def getScanJob(self, maxSize):
         with self._fixedScanRequests_lock:
-            while self._fixedScanRequests and self._fixedScanRequests[0][0] == self._fixedScanRequests[0][1]:
+            while (
+                self._fixedScanRequests
+                and self._fixedScanRequests[0][0] == self._fixedScanRequests[0][1]
+            ):
                 self._fixedScanRequests.pop(0)
-            
+
             if not self._fixedScanRequests:
                 return []
             startBlock = self._fixedScanRequests[0][0]
@@ -159,7 +163,6 @@ class ScannerRPCInterface(Logger):
             )
             return (startBlock, endBlock)
 
-
     def addScanResults(self, result):
         with self._fixedScanResult_lock:
             self._fixedScanResults.append(result)
@@ -167,7 +170,7 @@ class ScannerRPCInterface(Logger):
                 self.logInfo(f"scan results added, blocks {result[0]}-{result[2]}")
                 self._fixedScanResults_lock_condition.notify_all()
 
-    def readScanResults(self, blocking = True):
+    def readScanResults(self, blocking=True):
         with self._fixedScanResult_lock:
             while len(self._fixedScanResults) == 0:
                 if blocking:

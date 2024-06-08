@@ -37,7 +37,7 @@ class FileHandler(Logger):
         return f'{self.currentFile[0]}.{self.currentFile[1]}.json'
     
     def save(self, deleteOld=True, indent = None):
-        if self.currentData and self.last != self.start:
+        if self.currentData and self.latest != self.start:
             newName = f'{self.start}.{self.latest}.json'
             with open(self.filePath+newName, "w") as f:
                 f.write(json.dumps(self.currentData, indent=indent))

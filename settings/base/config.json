@@ -1,41 +1,5 @@
 {
-  "RPCSETTINGS": [
-    {
-      "APIURL": "https://base.llamarpc.com",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
-      "ACTIVESTATES": [
-        1,
-        2
-      ]
-    },
-    {
-      "APIURL": "https://base-pokt.nodies.app",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
-      "ACTIVESTATES": [
-        1,
-        2
-      ]
-    },
-    {
-      "APIURL": "wss://base.gateway.tenderly.co",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 300,
-      "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
-      "ACTIVESTATES": [
-        2
-      ]
-    }
-  ],
+  "RPCSETTINGS": [],
   "RPCOVERRIDE": {
     "APIURL": "",
     "MAXCHUNKSIZE": "",
@@ -54,7 +18,15 @@
   "SCANSETTINGS": {
     "RPC": {
       "ENABLED": true,
-      "APIURL": "https://1rpc.io/base",
+      "NAME": "SCANNERRPC",
+      "APIURL": {
+        "ARGS": {
+          "port": 8454,
+          "fork": "https://base.llamarpc.com"
+        },
+        "DEBUGLEVEL": "HIGH",
+        "LOGNAME": "hh_llama"
+      },
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
