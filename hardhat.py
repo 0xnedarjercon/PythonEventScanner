@@ -18,7 +18,7 @@ def runHardhat(cfg):
     std = subprocess.DEVNULL
     file = None
     if cfg["DEBUGLEVEL"] == "HIGH":
-        file = open(logName, "w")
+        file = open(logName, "a")
         std = file
     process = subprocess.Popen(command, stdout=std, stderr=subprocess.STDOUT)
     atexit.register(terminate_process, (process, file))

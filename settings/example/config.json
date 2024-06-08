@@ -10,7 +10,11 @@
       "ACTIVESTATES": [
         1,
         2
-      ]
+      ],
+      "HRE": {
+        "--port": "http://127.0.0.1:8454",
+        "--fork": "https://base.llamarpc.com"
+      }
     },
     {
       "APIURL": "https://base-pokt.nodies.app",
@@ -73,4 +77,4 @@
   "RPCINTERFACE": {
     "DEBUGLEVEL": "HIGH"
   }
-}f5tt
+}

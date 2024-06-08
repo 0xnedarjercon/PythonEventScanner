@@ -22,10 +22,11 @@
       "APIURL": {
         "ARGS": {
           "port": 8454,
-          "fork": "https://base.llamarpc.com"
+          "fork": "https://base.llamarpc2.com"
         },
         "DEBUGLEVEL": "HIGH",
-        "LOGNAME": "hh_llama"
+        "LOGNAME": "hh_llama",
+        "LOGMODE": "a"
       },
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
