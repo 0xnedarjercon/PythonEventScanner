@@ -1,5 +1,29 @@
 {
-  "RPCSETTINGS": [],
+  "RPCSETTINGS": [
+    {
+      "NAME": "hre_llama",
+      "APIURL": "https://base.llamarpc.com",
+      "MAXCHUNKSIZE": 30000,
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 2000,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "EXTREME",
+      "ACTIVESTATES": []
+    },
+    {
+      "NAME": "blockpi",
+      "APIURL": "https://base.blockpi.network/v1/rpc/public",
+      "MAXCHUNKSIZE": 30000,
+      "STARTCHUNKSIZE": 20,
+      "EVENTSTARGET": 2000,
+      "POLLINTERVAL": 1,
+      "DEBUGLEVEL": "EXTREME",
+      "ACTIVESTATES": [
+        1,
+        2
+      ]
+    }
+  ],
   "RPCOVERRIDE": {
     "APIURL": "",
     "MAXCHUNKSIZE": "",
@@ -16,18 +40,11 @@
     "DEBUGLEVEL": "EXTREME"
   },
   "SCANSETTINGS": {
+    "NAME": "scanner",
     "RPC": {
-      "ENABLED": true,
-      "NAME": "SCANNERRPC",
-      "APIURL": {
-        "ARGS": {
-          "port": 8454,
-          "fork": "https://base.llamarpc2.com"
-        },
-        "DEBUGLEVEL": "HIGH",
-        "LOGNAME": "hh_llama",
-        "LOGMODE": "a"
-      },
+      "ENABLED": false,
+      "NAME": "",
+      "APIURL": "hre_llama",
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
@@ -37,7 +54,7 @@
         1
       ]
     },
-    "STARTBLOCK": 15232703,
+    "STARTBLOCK": 15610777,
     "ENDBLOCK": "latest",
     "LIVETHRESHOLD": 100,
     "FORCENEW": false,
@@ -54,5 +71,16 @@
   },
   "RPCINTERFACE": {
     "DEBUGLEVEL": "EXTREME"
+  },
+  "HRE": {
+    "hre_llama": {
+      "ARGS": {
+        "port": 8454,
+        "fork": "https://base.llamarpc.com"
+      },
+      "DEBUGLEVEL": "HIGH",
+      "LOGNAME": "hh_llama",
+      "LOGMODE": "w"
+    }
   }
 }
