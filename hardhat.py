@@ -18,17 +18,17 @@ def runHardhat(cfg):
     std = subprocess.DEVNULL
     file = None
     if cfg["DEBUGLEVEL"] == "HIGH":
-        file = open(logName, "a")
+        file = open(logName, cfg["LOGMODE"])
         std = file
-    process = subprocess.Popen(command, stdout=std, stderr=subprocess.STDOUT)
-    atexit.register(terminate_process, (process, file))
+    process = subprocess.Popen(command, stdout=std, stderr=subprocess.DEVNULL)
+    atexit.register(terminate_process, process, file)
     time.sleep(5)
     return process
 
 
-def terminate_process(process, f):
-    if f is not None:
-        f.close()
+def terminate_process(process, file):
+    if file is not None:
+        file.close()
     if process.poll() is None:  # Check if the process is still running
         process.terminate()
         try:

@@ -5,23 +5,41 @@ from configLoader import configPath, folderPath
 import traceback
 from logConfig import logConfig
 
-log_queue = multiprocessing.Queue()
+
+def _locked_emit(emit):
+    def wrapper(record):
+        with log_lock:
+            emit(record)
+
+    return wrapper
+
+
 os.makedirs(configPath + "logs/", exist_ok=True)
 log_file = configPath + "logs/" + folderPath + ".log"
 log_lock = multiprocessing.Lock()
-listener = None
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+formatter = logging.Formatter("%(asctime)s - %(levelname)-9s - %(message)s")
+baseLogger = logging.getLogger("baseLogger")
+file_handler = logging.FileHandler(log_file)
+file_handler.setFormatter(formatter)
+file_handler.emit = _locked_emit(file_handler.emit)
 
 
 class Logger:
+    @classmethod
+    def setProcessName(self, name):
+        if name != "":
+            if len(name) > 10:
+                name = name[:10]
+            else:
+                while len(name) < 10:
+                    name += " "
+            multiprocessing.current_process().name = name
 
-    def __init__(self, name, debugLevel="HIGH"):
+    def __init__(self, debugLevel="HIGH"):
         if debugLevel is not None and debugLevel != "NONE":
-            self.log = logging.getLogger(name)
+            self.log = baseLogger
             self.log.setLevel(logConfig[debugLevel]["DEBUGLEVEL"])
-            file_handler = logging.FileHandler(log_file)
-            file_handler.setFormatter(formatter)
-            file_handler.emit = self._locked_emit(file_handler.emit)
+
             self.log.addHandler(file_handler)
         else:
             self.logDebug = self._emptyLog
@@ -29,41 +47,37 @@ class Logger:
             self.logWarn = self._emptyLog
             self.logCritical = self._emptyLog
 
-    def _locked_emit(self, emit):
-        def wrapper(record):
-            with log_lock:
-                emit(record)
-
-        return wrapper
-
     def _emptyLog(self, data, display=False, trace=False):
         pass
 
-    def logDebug(self, data, display=False, trace=False):
-        data += " " + multiprocessing.current_process().name
-        self.log.debug(data)
+    def logDebug(self, message, display=False, trace=False):
+        message = f"{multiprocessing.current_process().name} - {message}"
+        self.log.debug(message)
         if display:
-            print(data)
+            print(message)
         if trace:
             traceback.print_exc()
 
-    def logInfo(self, data, display=False, trace=False):
-        self.log.info(data)
+    def logInfo(self, message, display=False, trace=False):
+        message = f"{multiprocessing.current_process().name} - {message}"
+        self.log.info(message)
         if display:
-            print(data)
+            print(message)
         if trace:
             traceback.print_exc()
 
-    def logWarn(self, data, display=True, trace=True):
-        self.log.warning(data)
+    def logWarn(self, message, display=True, trace=True):
+        message = f"{multiprocessing.current_process().name} - {message}"
+        self.log.warning(message)
         if display:
-            print(data)
+            print(message)
             if trace:
                 traceback.print_exc()
 
-    def logCritical(self, data, display=True, trace=True):
-        self.log.critical(data)
+    def logCritical(self, message, display=True, trace=True):
+        message = f"{multiprocessing.current_process().name} - {message}"
+        self.log.critical(message)
         if display:
-            print(data)
+            print(message)
             if trace:
                 traceback.print_exc()

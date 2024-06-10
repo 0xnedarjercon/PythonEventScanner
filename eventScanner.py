@@ -7,9 +7,10 @@ import os
 from logger import Logger
 import multiprocessing
 from configLoader import scanSettings, rpcSettings, configPath, rpcInterfaceSettings
-from scannerRpcInterface import ScannerRPCInterface
+from scannerRpcInterface import JobManager
 import atexit
-
+from scannerRpcInterface import IfixedScan, IJobManager, IliveScan
+import asyncio
 
 directory = os.path.dirname(os.path.abspath(__file__))
 from rpc import RPC
@@ -44,27 +45,18 @@ class EventScanner(Logger):
 
     def __init__(self):
         atexit.register(self.teardown)
-        self.iRpc = ScannerRPCInterface(rpcInterfaceSettings)
-        super().__init__("scanner")
         self.loadSettings(scanSettings, rpcSettings)
         self.fileHandler = FileHandler()
 
     def loadSettings(self, scanSettings, rpcSettings):
-        super().__init__("scanner", scanSettings["DEBUGLEVEL"])
+        Logger.setProcessName(scanSettings["NAME"])
+        super().__init__(scanSettings["DEBUGLEVEL"])
         self.scanMode = scanSettings["MODE"]
         self.events = scanSettings["EVENTS"]
         self.loadAbis()
         self.processContracts(scanSettings["CONTRACTS"])
         self.initRpcs(rpcSettings)
-        self.rpc = None
-        if scanSettings["RPC"] is not None and scanSettings["RPC"]["ENABLED"] == True:
-            self.rpc = RPC(
-                scanSettings["RPC"],
-                self.iRpc,
-                scanSettings["MODE"],
-                self.contracts,
-                self.abiLookups,
-            )
+
         if scanSettings["STARTBLOCK"] == "current":
             self.startBlock = self.getCurrentBlock()
         else:
@@ -92,7 +84,9 @@ class EventScanner(Logger):
         if self.rpc:
             return self.rpc.w3.eth.get_block_number()
         else:
-            return self.iRpc.syncRequest("w3.eth.get_block_number")
+            block = IJobManager.addJob("w3.eth.get_block_number")
+            self.logInfo(f"current block is {block}")
+            return block
 
     def loadAbis(self):
         self.abis = {}
@@ -103,6 +97,15 @@ class EventScanner(Logger):
 
     def initRpcs(self, rpcSettings):
         self.processes = []
+        self.rpc = None
+        if scanSettings["RPC"] is not None and scanSettings["RPC"]["ENABLED"] == True:
+            self.rpc = RPC(
+                scanSettings["RPC"],
+                scanSettings["MODE"],
+                self.contracts,
+                self.abiLookups,
+                updateProcName=False,
+            )
         for rpcSetting in rpcSettings:
             process = multiprocessing.Process(
                 target=self.initRPCProcess,
@@ -122,13 +125,12 @@ class EventScanner(Logger):
         self.teardown()
 
     def teardown(self):
-        self.iRpc.state = -1
+        IJobManager.state = -1
         self.fileHandler.save()
 
     def initRPCProcess(self, settings):
         rpc = RPC(
             settings,
-            self.iRpc,
             self.scanMode,
             self.contracts,
             self.abiLookups,
@@ -142,26 +144,25 @@ class EventScanner(Logger):
         self,
         progress_bar,
         startTime,
-        currentBlock,
         start,
         totalBlocks,
         numBlocks,
     ):
         elapsedTime = time.time() - startTime
-        avg = (self.fileHandler.latest - start) / elapsedTime + 0.1
-        remainingTime = (totalBlocks - (self.fileHandler.latest - start)) / avg
+        progress = self.fileHandler.latest - start
+        avg = progress / elapsedTime + 0.1
+        remainingTime = (totalBlocks - progress) / avg
         eta = f"{int(remainingTime)}s ({time.asctime(time.localtime(time.time()+remainingTime))})"
         progress_bar.set_description(
-            f"Current block: {currentBlock} stored up to: {self.fileHandler.latest} ETA:{eta} avg: {avg} blocks/s"
+            f"Stored up to: {self.fileHandler.latest} ETA:{eta} avg: {avg} blocks/s {progress}/{totalBlocks}"
         )
         progress_bar.update(numBlocks)
 
     def scanFixedEnd(self, start, endBlock):
         startTime = time.time()
         totalBlocks = endBlock - start
-        currentBlock = start
-        self.iRpc.addScanRange(start, endBlock)
-        self.iRpc.state = 1
+        IfixedScan.addScanRange(start, endBlock)
+        IJobManager.state = 1
         self.logInfo(
             f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
             True,
@@ -171,16 +172,13 @@ class EventScanner(Logger):
                 numBlocks = 0
                 if self.rpc:
                     self.rpc.fixedScan()
-                    results = self.iRpc.readScanResults(False)
+                    results = IfixedScan.checkResults()
                 else:
-                    results = self.iRpc.readScanResults(True)
-                for result in results:
-                    numBlocks = self.fileHandler.process(result)
-                    currentBlock = result[2]
+                    results = IfixedScan.waitResults()
+                numBlocks = self.fileHandler.process(results)
                 self.updateProgress(
                     progress_bar,
                     startTime,
-                    currentBlock,
                     start,
                     totalBlocks,
                     numBlocks,
@@ -204,9 +202,9 @@ class EventScanner(Logger):
         if end is None:
             end = self.endBlock
         if resultsOut is None:
-            resultsOut = {}
+            resultsOut = []
         if end == "current":
-            end = self.getBlockNumber()
+            end = self.getCurrentBlock()
         if isinstance(end, int):
             self.scanMissingBlocks(start, end)
             return
@@ -223,32 +221,36 @@ class EventScanner(Logger):
         for missingBlock in missingBlocks:
             self.fileHandler.setup(missingBlock[0])
             self.scanFixedEnd(missingBlock[0], missingBlock[1])
+        self.fileHandler.setup(end)
 
-    def scan(self, storeResults=False, callback=None, resultsOut=None):
-        try:
-            start = max([self.startBlock, self.fileHandler.latest])
-            if type(self.endBlock) == int:
-                self.scanFixedEnd(start, self.endBlock)
-            elif self.endBlock == "latest":
-                latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
-                while latestBlock > self.fileHandler.latest + self.liveThreshold:
-                    self.logInfo(f"scanning to latest block: {latestBlock}")
-                    self.scanFixedEnd(start, latestBlock)
-                    latestBlock = self.iRpc.syncRequest("w3.eth.get_block_number")
-                self.logInfo(
-                    f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
-                )
-                self.scanLive(
-                    resultsOut,
-                    callback,
-                    storeResults,
-                )
-            self.teardown()
-
-        except KeyboardInterrupt:
-            print("keyboard interrupt detected, saving...")
-            self.interrupt()
-        return self.fileHandler.latest
+    # def scan(self, storeResults=True, callback=None, resultsOut=None):
+    #     try:
+    #         self.fileHandler.setup(self.startBlock)
+    #         start = max([self.startBlock, self.fileHandler.latest])
+    #         if type(self.endBlock) == int:
+    #             self.logInfo(
+    #                 f"running fixed scan {self.startBlock} to {self.endBlock}, data exists up to {start}"
+    #             )
+    #             self.scanFixedEnd(start, self.endBlock)
+    #         elif self.endBlock == "latest":
+    #             latestBlock = self.getCurrentBlock()
+    #             while latestBlock > self.fileHandler.latest + self.liveThreshold:
+    #                 self.logInfo(f"scanning to latest block: {latestBlock}")
+    #                 self.scanFixedEnd(start, latestBlock)
+    #                 latestBlock = self.getCurrentBlock()
+    #             self.logInfo(
+    #                 f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
+    #             )
+    #             self.scanLive(
+    #                 resultsOut,
+    #                 callback,
+    #                 storeResults,
+    #             )
+    #         self.teardown()
+    #     except KeyboardInterrupt:
+    #         print("keyboard interrupt detected, saving...")
+    #         self.interrupt()
+    #     return self.fileHandler.latest
 
     def getEvents(self, start, end, results=[]):
         self.scanMissingBlocks(start, end)
@@ -261,15 +263,18 @@ class EventScanner(Logger):
         callback=None,
         storeResults=True,
     ):
-        self.iRpc.state = 2
-        self.iRpc.start = self.getLastStoredBlock()
+        IJobManager.state = 2
+        startBlock = IliveScan.last = self.getLastStoredBlock()
+        self.logInfo(f"livescanning from block {startBlock}", True)
         if resultsOut == None:
-            resultsOut = {}
+            resultsOut = []
         while True:
-            resultsOut.update(self.iRpc.getLiveResults())
+
+            results = IliveScan.waitResults()
+            resultsOut += results
             if callback != None:
                 callback(resultsOut)
-            if storeResults:
+            if storeResults and resultsOut:
                 self.fileHandler.process(resultsOut)
             resultsOut.clear()
 

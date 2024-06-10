@@ -8,6 +8,8 @@ import math
 import asyncio
 import traceback
 from hardhat import runHardhat
+from scannerRpcInterface import IfixedScan, IJobManager, IliveScan
+from collections import deque
 
 
 def getW3(cfg):
@@ -80,9 +82,10 @@ def getEventParameters(param):
 
 
 class RPC(Logger):
-    def __init__(self, rpcSettings, iScanner, scanMode, contracts, abiLookups):
+    def __init__(self, rpcSettings, scanMode, contracts, abiLookups):
         self.apiUrl = rpcSettings["APIURL"]
-        super().__init__(rpcSettings["NAME"], rpcSettings["DEBUGLEVEL"])
+        Logger.setProcessName(rpcSettings["NAME"])
+        super().__init__(rpcSettings["DEBUGLEVEL"])
         self.isHH = False
         if type(rpcSettings["APIURL"]) == dict:
             self.initHREW3(rpcSettings["APIURL"])
@@ -92,7 +95,6 @@ class RPC(Logger):
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
         self.pollInterval = rpcSettings["POLLINTERVAL"]
-        self.iScanner = iScanner
         self.contracts = contracts
         self.abiLookups = abiLookups
         self.jobs = []
@@ -103,6 +105,7 @@ class RPC(Logger):
         self.running = True
         self.scanMode = scanMode
         self.logDebug(f"logging enabled")
+        self.completedJobs = deque(maxlen=20)
 
     def initHREW3(self, HRESettings):
         self.hh = runHardhat(HRESettings)
@@ -115,25 +118,34 @@ class RPC(Logger):
         self.logInfo(f"hardhat running on port {port}", True)
 
     def run(self):
-        state = self.iScanner.state
+        state = IJobManager.state
         while state > -1 and self.running == True:
-            self.iScanner.checkSyncRequest(self)
+            IJobManager.checkJob(self)
             if state == 1 and state in self.activeStates:
                 self.runFixed()
             elif state == 2 and state in self.activeStates:
                 self.runLive()
             else:
-                self.iScanner.checkSyncRequest(self, blocking=True)
-            state = self.iScanner.state
+                self.checkJobs()
+            state = IJobManager.state
+        if self.jobs:
+            for job in self.jobs:
+                IfixedScan.addScanRange(job[0], job[1])
 
     def runFixed(self):
-        while self.iScanner.state == 1:
-            self.iScanner.checkSyncRequest(self)
+        while IJobManager.state == 1:
+            IJobManager.checkJob(self)
             self.fixedScan()
+
+    def checkJobs(self):
+        try:
+            IJobManager.checkJob(self)
+        except Exception as e:
+            print(e)
 
     def fixedScan(self):
         if len(self.jobs) == 0:
-            newJob = self.iScanner.getScanJob(self.currentChunkSize)
+            newJob = IfixedScan.getScanJob(self.currentChunkSize)
             if newJob != [] and newJob[0] != newJob[1]:
                 self.jobs.append(newJob)
                 self.logInfo(f"job added: {self.jobs} ")
@@ -142,9 +154,7 @@ class RPC(Logger):
                 job = self.nextJob()
                 self.logInfo(f"starting job {job}")
                 events = self.scanChunk(job[0], job[1])
-                self.iScanner.addScanResults(
-                    [job[0], self.decodeEvents(events), job[1]]
-                )
+                IfixedScan.addResults([job[0], self.decodeEvents(events), job[1]])
                 self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
                 self.logInfo(
                     f"processed events: {len(events)}, from {self.jobs[0][0]} to {self.jobs[0][1]} ({self.jobs[0][1]-self.jobs[0][0]}), throttled to {self.currentChunkSize}"
@@ -155,22 +165,21 @@ class RPC(Logger):
                 self.handleError(e)
 
     def runLive(self):
-        start = self.iScanner.start
-        self.logInfo(f"livescan started at block {start}")
+        last = IliveScan.last
+        self.logInfo(f"livescan started at block {last}")
         if self.websocket:
-            self.filterParams = self.getFilter(start, "latest")
+            self.filterParams = self.getFilter(last, "latest")
             self.filterParams = self.w3.eth.filter(self.filterParams)
-            while self.iScanner.state == 2:
-
-                start = self.iScanner.start
+            while IJobManager.state == 2:
+                last = IliveScan.last
                 try:
-                    self.iScanner.checkSyncRequest(self)
+                    IJobManager.checkJob(self)
                     startTime = time.time()
                     self.logInfo("request latest events")
                     newEvents = self.filterParams.get_new_entries()
                     if len(newEvents) > 0:
                         self.logInfo(f"updating results with {len(newEvents)} events")
-                        self.iScanner.addLiveResults(self.decodeEvents(newEvents))
+                        IliveScan.addResults([last, self.decodeEvents(newEvents), -1])
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
@@ -180,19 +189,19 @@ class RPC(Logger):
                         f"error: {type(e)}, {e}, {traceback.format_exc()}", True
                     )
         else:
-            while self.iScanner.state == 2:
+            while IJobManager.state == 2:
                 try:
-                    self.iScanner.checkSyncRequest(self)
-                    start = self.iScanner.start
-                    self.logInfo(f"request new events from {start}")
-                    self.filterParams = self.getFilter(start, start + 5)
+                    IJobManager.checkJob(self)
+                    last = IliveScan.last
+                    self.logInfo(f"request new events from {last}")
+                    self.filterParams = self.getFilter(last, last + 5)
                     startTime = time.time()
                     newEvents = self.w3.eth.get_logs(self.filterParams)
                     if len(newEvents) > 0:
                         self.logInfo(
                             f"updating results with {len(newEvents)} new events"
                         )
-                        self.iScanner.addLiveResults(self.decodeEvents(newEvents))
+                        IliveScan.addResults([last, self.decodeEvents(newEvents), -1])
                     delta = time.time() - startTime
                     if delta < self.pollInterval:
                         time.sleep(self.pollInterval - delta)
@@ -312,6 +321,8 @@ class RPC(Logger):
             self.logInfo(f"timeout error, splitting jobs")
             self.splitJob(2)
             self.failCount += 1
+        elif type(e) == KeyboardInterrupt:
+            pass
         else:
             self.logWarn(
                 f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
@@ -322,10 +333,10 @@ class RPC(Logger):
             self.failCount += 1
         if self.failCount == 10:
             for job in self.jobs:
-                self.iScanner.addScanRange(job[0], job[1])
+                IfixedScan.addScanRange(job[0], job[1])
         elif self.failCount > 20:
             for job in self.jobs:
-                self.iScanner.addScanRange(job[0], job[1])
+                IfixedScan.addScanRange(job[0], job[1])
             self.logCritical("too many failures, rpc shutting down")
             self.running = False
 
