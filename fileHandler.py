@@ -2,14 +2,17 @@ import os
 import json
 import time
 from logger import Logger
-from configLoader import fileSettings, configPath
 
 
 # currently assumes all files stored are sequential
 class FileHandler(Logger):
-    def __init__(self):
-        super().__init__(fileSettings["DEBUGLEVEL"])
-        filePath = configPath + fileSettings["FILENAME"] + "/"
+    def __init__(
+        self,
+        fileSettings,
+        configPath,
+    ):
+        super().__init__(configPath, fileSettings)
+        filePath = configPath + "data/"
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
         self.currentData = {}
@@ -25,7 +28,7 @@ class FileHandler(Logger):
 
     def createNewFile(self, startBlock=None):
         if startBlock is None:
-            startBlock = self.latest
+            startBlock = self.latest + 1
         self.start = self.latest = startBlock
 
         self.currentFile = (self.start, self.latest)
@@ -68,7 +71,7 @@ class FileHandler(Logger):
 
     def mergePending(self):
         numBlocks = 0
-        while len(self.pending) > 0 and self.pending[0][0] <= self.latest:
+        while len(self.pending) > 0 and self.pending[0][0] <= self.latest + 1:
             self.currentData.update(self.pending[0][1])
             self.latest = max(self.pending[0][2], self.latest)
             self.logInfo(
@@ -98,19 +101,18 @@ class FileHandler(Logger):
 
     def getLatestFileFrom(self, startBlock):
         fileTuples = self.getFiles()
-        fileEnd = startBlock
-        started = False
-        for i, fileTuple in enumerate(fileTuples):
-            if fileEnd == startBlock and startBlock >= fileTuple[0]:
-                fileEnd = fileTuple[1]
-            if fileEnd != startBlock:
-                if i + 1 == len(fileTuples):
-                    if startBlock > fileTuple[1]:
-                        return None
-                    return fileTuple
-                if started and fileEnd != fileTuples[i + 1][0]:
-                    return fileTuples[i + 1]
-        return None
+        lastFile = None
+        for fileTuple in fileTuples:
+            if lastFile is None:
+                if startBlock <= fileTuple[1]:
+                    if startBlock >= fileTuple[0]:
+                        lastFile = fileTuple
+                    else:
+                        break
+            else:
+                if lastFile[1] + 1 == fileTuple[0]:
+                    lastFile = fileTuple
+        return lastFile
 
     def toFileName(self, value):
         return f"{value[0]}.{value[1]}.json"
@@ -129,11 +131,13 @@ class FileHandler(Logger):
             self.latest = startBlock
             self.start = startBlock
             self.currentFile = (self.start, self.latest)
+            self.currentData = {}
         else:
             self.start = latestFileTuple[0]
             self.latest = latestFileTuple[1]
             self.currentFile = (self.start, self.latest)
-            self.loadFile(self.currentFileName)
+            self.currentData = self.loadFile(self.currentFileName)
+
         self.logDebug(f"setup complete, {self.currentFile} waiting for {self.latest}")
 
         return self.latest
@@ -142,10 +146,19 @@ class FileHandler(Logger):
         files = self.getFiles()
         missing = []
         i = 0
+        started = False
         while start < end and i < len(files):
-            if files[i][0] > start:
-                missing.append((start, files[i][0]))
-            start = max(files[i][1], start)
+            if not started:
+                if files[i][0] > start:
+                    missing.append((start, files[i][0] - 1))
+                    started = True
+                elif files[i][1] >= start:
+                    started = True
+            else:
+                if files[i][0] > start:
+                    missing.append((start, files[i][0] - 1))
+
+            start = max(files[i][1] + 1, start)
             i += 1
         if start < end:
             missing.append((start, end))

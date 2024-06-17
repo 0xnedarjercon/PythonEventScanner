@@ -1,24 +1,54 @@
 import multiprocessing
 import copy
 from logger import Logger
-from configLoader import rpcInterfaceSettings
-import threading
+
+
+class DummyLock:
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def wait(self):
+        pass
+
+    def notify_all(self):
+        pass
+
+
+class DummyInt(int):
+    def __init__(self, value):
+        self._value = value
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, new_value):
+        self._value = new_value
 
 
 class InterProcessResults(Logger):
-    def __init__(self, debugLevel):
-        super().__init__(debugLevel)
-        manager = multiprocessing.Manager()
-        self.results = manager.list()
-        self.results_lock_condition = manager.RLock()
-        self.results_lock_condition = manager.Condition()
+    def __init__(self, configPath, debugLevel, multiprocess=True):
+        super().__init__(configPath, debugLevel)
+        if multiprocess:
+            manager = multiprocessing.Manager()
+            self.results = manager.list()
+            self.results_lock_condition = manager.RLock()
+            self.results_lock_condition = manager.Condition()
+        else:
+            self.results = []
+            self.results_lock_condition = DummyLock()
+            self.results_lock_condition = DummyLock()
 
     def checkResults(self):
         with self.results_lock_condition:
             self.logInfo("results locked")
             if len(self.results) == 0:
                 return []
-            results = copy.deepcopy(self.data.results)
+            results = copy.deepcopy(self.results)
             self.results[:] = []
         return results
 
@@ -44,15 +74,23 @@ class InterProcessResults(Logger):
 
 
 class JobManager(Logger):
-    def __init__(self):
-        super().__init__(rpcInterfaceSettings["DEBUGLEVEL"])
-        self.manager = multiprocessing.Manager()
-        self._state = self.manager.Value("i", 0)
-        self._state_lock = multiprocessing.RLock()
-        self.jobs = self.manager.dict()
-        self.jobIndex = self.manager.Value("i", 0)
-        self.jobs_lock = multiprocessing.RLock()
-        self.jobs_lock_condition = multiprocessing.Condition(self.jobs_lock)
+    def __init__(self, configPath, interfaceSettings, multiprocess=True):
+        super().__init__(configPath, interfaceSettings)
+        if multiprocess:
+            self.manager = multiprocessing.Manager()
+            self._state = self.manager.Value("i", 0)
+            self._state_lock = multiprocessing.RLock()
+            self.jobs = self.manager.dict()
+            self.jobIndex = self.manager.Value("i", 0)
+            self.jobs_lock = multiprocessing.RLock()
+            self.jobs_lock_condition = multiprocessing.Condition(self.jobs_lock)
+        else:
+            self._state = DummyInt(0)
+            self.jobs = {}
+            self.jobIndex = DummyInt(0)
+            self.jobs_lock = DummyLock()
+            self.jobs_lock_condition = DummyLock()
+            self._state_lock = DummyLock()
 
     @property
     def state(self):
@@ -127,11 +165,15 @@ class JobManager(Logger):
 
 
 class FixedScan(InterProcessResults):
-    def __init__(self):
+    def __init__(self, configPath, interfaceSettings, multiprocess=True):
         manager = multiprocessing.Manager()
-        super().__init__(rpcInterfaceSettings["DEBUGLEVEL"])
-        self.remaining = manager.list()
-        self.remaining_lock = multiprocessing.RLock()
+        super().__init__(configPath, interfaceSettings, multiprocess)
+        if multiprocess:
+            self.remaining = manager.list()
+            self.remaining_lock = multiprocessing.RLock()
+        else:
+            self.remaining = []
+            self.remaining_lock = DummyLock()
 
     def addScanRange(self, start, end):
         with self.remaining_lock:
@@ -143,18 +185,22 @@ class FixedScan(InterProcessResults):
                 return []
             startBlock = self.remaining[0][0]
             endBlock = min(startBlock + maxSize, self.remaining[0][1])
-            self.remaining[0] = (endBlock, self.remaining[0][1])
-            if self.remaining[0][0] == self.remaining[0][1]:
+            self.remaining[0] = (endBlock + 1, self.remaining[0][1])
+            if self.remaining[0][0] >= self.remaining[0][1]:
                 self.remaining.pop(0)
             return (startBlock, endBlock)
 
 
 class LiveScan(InterProcessResults):
-    def __init__(self):
+    def __init__(self, configPath, interfaceSettings, multiprocess=True):
         manager = multiprocessing.Manager()
-        super().__init__(rpcInterfaceSettings["DEBUGLEVEL"])
-        self._last = manager.Value("i", 0)
-        self.last_lock = manager.RLock()
+        super().__init__(configPath, interfaceSettings, multiprocess)
+        if multiprocess:
+            self._last = manager.Value("i", 0)
+            self.last_lock = manager.RLock()
+        else:
+            self._last = DummyInt(0)
+            self.last_lock = DummyLock()
 
     @property
     def last(self):
@@ -165,6 +211,11 @@ class LiveScan(InterProcessResults):
     def last(self, value):
         with self.last_lock:
             self._last.value = value
+
+    def updateLast(self, value):
+        with self.last_lock:
+            self._last.value = max(value, self._last.value)
+            print(self._last.value, value)
 
     def addResults(self, result):
         with self.last_lock:
@@ -178,6 +229,8 @@ class LiveScan(InterProcessResults):
         super().addResults(result)
 
 
-IfixedScan = FixedScan()
-IliveScan = LiveScan()
-IJobManager = JobManager()
+def initInterfaces(configPath, interfaceSettings, multiprocess):
+    IfixedScan = FixedScan(configPath, interfaceSettings, multiprocess)
+    IliveScan = LiveScan(configPath, interfaceSettings, multiprocess)
+    IJobManager = JobManager(configPath, interfaceSettings, multiprocess)
+    return IfixedScan, IliveScan, IJobManager

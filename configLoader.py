@@ -3,21 +3,7 @@ from dotenv import load_dotenv
 import os
 
 
-load_dotenv()
-folderPath = os.getenv("FOLDER_PATH")
-configPath = f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
-with open(configPath + "config.json") as f:
-    cfg = json.load(f)
-
-
-fileSettings = cfg["FILESETTINGS"]
-scanSettings = cfg["SCANSETTINGS"]
-rpcSettings = cfg["RPCSETTINGS"]
-rpcInterfaceSettings = cfg["RPCINTERFACE"]
-hreSettings = cfg["HRE"]
-
-
-def overrideSettings(rpcSetting):
+def overrideSettings(cfg, rpcSetting, hreSettings):
     for key, value in cfg["RPCOVERRIDE"].items():
         if value != "":
             rpcSetting[key] = value
@@ -25,6 +11,13 @@ def overrideSettings(rpcSetting):
         rpcSetting["APIURL"] = hreSettings[rpcSetting["APIURL"]]
 
 
-for rpcSetting in rpcSettings:
-    overrideSettings(rpcSetting)
-overrideSettings(scanSettings["RPC"])
+def loadConfig(cfg):
+    fileSettings = cfg["FILESETTINGS"]
+    scanSettings = cfg["SCANSETTINGS"]
+    rpcSettings = cfg["RPCSETTINGS"]
+    rpcInterfaceSettings = cfg["RPCINTERFACE"]
+    hreSettings = cfg["HRE"]
+
+    for rpcSetting in rpcSettings:
+        overrideSettings(cfg, rpcSetting, hreSettings)
+    return fileSettings, scanSettings, rpcSettings, rpcInterfaceSettings, hreSettings

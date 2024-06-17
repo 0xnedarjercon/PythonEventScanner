@@ -1,26 +1,18 @@
 {
   "RPCSETTINGS": [
     {
-      "NAME": "hre_llama",
+      "NAME": "",
       "APIURL": "https://base.llamarpc.com",
       "MAXCHUNKSIZE": 30000,
       "STARTCHUNKSIZE": 20,
       "EVENTSTARGET": 2000,
       "POLLINTERVAL": 1,
       "DEBUGLEVEL": "EXTREME",
-      "ACTIVESTATES": []
-    },
-    {
-      "NAME": "blockpi",
-      "APIURL": "https://base.blockpi.network/v1/rpc/public",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
+      "LOGNAMES": [
+        ""
+      ],
       "ACTIVESTATES": [
-        1,
-        2
+        1
       ]
     }
   ],
@@ -37,28 +29,22 @@
     "SAVEINTERVAL": 600,
     "FILENAME": "basescan",
     "MAXENTRIES": 1000,
-    "DEBUGLEVEL": "EXTREME"
+    "DEBUGLEVEL": "EXTREME",
+    "LOGNAMES": [
+      ""
+    ]
   },
   "SCANSETTINGS": {
     "NAME": "scanner",
-    "RPC": {
-      "ENABLED": false,
-      "NAME": "",
-      "APIURL": "hre_llama",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 2000,
-      "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
-      "ACTIVESTATES": [
-        1
-      ]
-    },
+    "RPC": true,
     "STARTBLOCK": 15610777,
-    "ENDBLOCK": "latest",
+    "ENDBLOCK": 15617778,
     "LIVETHRESHOLD": 100,
     "FORCENEW": false,
     "DEBUGLEVEL": "HIGH",
+    "LOGNAMES": [
+      ""
+    ],
     "CONTRACTS": {
       "0x78b3C724A2F663D11373C4a1978689271895256f": "ERC20",
       "0x1a9f461a371559f82976fa18c46a6a0d29f131d0": "AEROPAIR",
@@ -70,7 +56,10 @@
     ]
   },
   "RPCINTERFACE": {
-    "DEBUGLEVEL": "EXTREME"
+    "DEBUGLEVEL": "EXTREME",
+    "LOGNAMES": [
+      ""
+    ]
   },
   "HRE": {
     "hre_llama": {

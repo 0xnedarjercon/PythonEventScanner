@@ -1,16 +1,13 @@
 from web3 import Web3
 import time
-import threading
 import json
 from tqdm import tqdm
 import os
 from logger import Logger
 import multiprocessing
-from configLoader import scanSettings, rpcSettings, configPath, rpcInterfaceSettings
-from scannerRpcInterface import JobManager
+from configLoader import loadConfig
 import atexit
-from scannerRpcInterface import IfixedScan, IJobManager, IliveScan
-import asyncio
+from scannerRpcInterface import initInterfaces
 
 directory = os.path.dirname(os.path.abspath(__file__))
 from rpc import RPC
@@ -41,22 +38,52 @@ def processEvents(event):
     return eventSig, topicCount
 
 
+class InvalidConfigException(Exception):
+    def __init__(self, text=""):
+        self.text = text
+
+
 class EventScanner(Logger):
 
-    def __init__(self):
-        atexit.register(self.teardown)
-        self.loadSettings(scanSettings, rpcSettings)
-        self.fileHandler = FileHandler()
+    def __init__(
+        self,
+        fileSettings,
+        scanSettings,
+        rpcSettings,
+        rpcInterfaceSettings,
+        configPath,
+        showprogress=True,
+    ):
 
-    def loadSettings(self, scanSettings, rpcSettings):
+        atexit.register(self.teardown)
+        self.configPath = configPath
         Logger.setProcessName(scanSettings["NAME"])
-        super().__init__(scanSettings["DEBUGLEVEL"])
+        super().__init__(configPath, scanSettings)
+        self.loadSettings(scanSettings, rpcSettings, rpcInterfaceSettings)
+        self.fileHandler = FileHandler(
+            fileSettings,
+            configPath,
+        )
+        self.showProgress = showprogress
+        self.validateSettings()
+
+    def validateSettings(self):
+
+        if len(self.abiLookups) == 0 and self.scanMode == "ANYCONTRACT":
+            raise InvalidConfigException(
+                "invalid configuration, unable to find any abis"
+            )
+        if len(self.contracts) == 0 and self.scanMode == "ANYEVENT":
+            raise InvalidConfigException(
+                "invalid configuration, unable to find any contracts"
+            )
+
+    def loadSettings(self, scanSettings, rpcSettings, rpcInterfaceSettings):
         self.scanMode = scanSettings["MODE"]
         self.events = scanSettings["EVENTS"]
         self.loadAbis()
         self.processContracts(scanSettings["CONTRACTS"])
-        self.initRpcs(rpcSettings)
-
+        self.initRpcs(rpcSettings, scanSettings, rpcInterfaceSettings)
         if scanSettings["STARTBLOCK"] == "current":
             self.startBlock = self.getCurrentBlock()
         else:
@@ -84,27 +111,43 @@ class EventScanner(Logger):
         if self.rpc:
             return self.rpc.w3.eth.get_block_number()
         else:
-            block = IJobManager.addJob("w3.eth.get_block_number")
+            block = self.iJobManager.addJob("w3.eth.get_block_number")
             self.logInfo(f"current block is {block}")
             return block
 
     def loadAbis(self):
         self.abis = {}
-        files = os.listdir(configPath + "ABIs/")
+        files = os.listdir(self.configPath + "ABIs/")
         for file in files:
             if file.endswith(".json"):
-                self.abis[file[:-5]] = json.load(open(configPath + "ABIs/" + file))
+                self.abis[file[:-5]] = json.load(open(self.configPath + "ABIs/" + file))
 
-    def initRpcs(self, rpcSettings):
+    def initRpcs(self, rpcSettings, _scanSettings, rpcInterfaceSettings):
+        if len(rpcSettings) == 0:
+            raise InvalidConfigException("need at least one RPC configured")
+        elif len(rpcSettings) > 1:
+            multiprocessing = True
+        else:
+            multiprocessing = False
+
+        self.iFixedScan, self.iLiveScan, self.iJobManager = initInterfaces(
+            self.configPath, rpcInterfaceSettings, multiprocessing
+        )
         self.processes = []
         self.rpc = None
-        if scanSettings["RPC"] is not None and scanSettings["RPC"]["ENABLED"] == True:
+
+        if _scanSettings["RPC"]:
+            scannerRpc = rpcSettings.pop(0)
+            scannerRpc["NAME"] = _scanSettings["NAME"]
             self.rpc = RPC(
-                scanSettings["RPC"],
-                scanSettings["MODE"],
+                scannerRpc,
+                self.scanMode,
                 self.contracts,
                 self.abiLookups,
-                updateProcName=False,
+                self.iFixedScan,
+                self.iJobManager,
+                self.iLiveScan,
+                self.configPath,
             )
         for rpcSetting in rpcSettings:
             process = multiprocessing.Process(
@@ -125,15 +168,22 @@ class EventScanner(Logger):
         self.teardown()
 
     def teardown(self):
-        IJobManager.state = -1
+        self.iJobManager.state = -1
         self.fileHandler.save()
 
-    def initRPCProcess(self, settings):
+    def initRPCProcess(
+        self,
+        settings,
+    ):
         rpc = RPC(
             settings,
             self.scanMode,
             self.contracts,
             self.abiLookups,
+            self.iFixedScan,
+            self.iJobManager,
+            self.iLiveScan,
+            self.configPath,
         )
         try:
             rpc.run()
@@ -161,20 +211,20 @@ class EventScanner(Logger):
     def scanFixedEnd(self, start, endBlock):
         startTime = time.time()
         totalBlocks = endBlock - start
-        IfixedScan.addScanRange(start, endBlock)
-        IJobManager.state = 1
+        self.iFixedScan.addScanRange(start, endBlock)
+        self.iJobManager.state = 1
         self.logInfo(
             f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
             True,
         )
-        with tqdm(total=endBlock - start) as progress_bar:
+        with tqdm(total=endBlock - start, disable=self.showProgress) as progress_bar:
             while self.fileHandler.latest < endBlock:
                 numBlocks = 0
                 if self.rpc:
                     self.rpc.fixedScan()
-                    results = IfixedScan.checkResults()
+                    results = self.iFixedScan.checkResults()
                 else:
-                    results = IfixedScan.waitResults()
+                    results = self.iFixedScan.waitResults()
                 numBlocks = self.fileHandler.process(results)
                 self.updateProgress(
                     progress_bar,
@@ -223,35 +273,6 @@ class EventScanner(Logger):
             self.scanFixedEnd(missingBlock[0], missingBlock[1])
         self.fileHandler.setup(end)
 
-    # def scan(self, storeResults=True, callback=None, resultsOut=None):
-    #     try:
-    #         self.fileHandler.setup(self.startBlock)
-    #         start = max([self.startBlock, self.fileHandler.latest])
-    #         if type(self.endBlock) == int:
-    #             self.logInfo(
-    #                 f"running fixed scan {self.startBlock} to {self.endBlock}, data exists up to {start}"
-    #             )
-    #             self.scanFixedEnd(start, self.endBlock)
-    #         elif self.endBlock == "latest":
-    #             latestBlock = self.getCurrentBlock()
-    #             while latestBlock > self.fileHandler.latest + self.liveThreshold:
-    #                 self.logInfo(f"scanning to latest block: {latestBlock}")
-    #                 self.scanFixedEnd(start, latestBlock)
-    #                 latestBlock = self.getCurrentBlock()
-    #             self.logInfo(
-    #                 f"close enough to latest block: {self.fileHandler.latest} - {latestBlock}. starting live mode"
-    #             )
-    #             self.scanLive(
-    #                 resultsOut,
-    #                 callback,
-    #                 storeResults,
-    #             )
-    #         self.teardown()
-    #     except KeyboardInterrupt:
-    #         print("keyboard interrupt detected, saving...")
-    #         self.interrupt()
-    #     return self.fileHandler.latest
-
     def getEvents(self, start, end, results=[]):
         self.scanMissingBlocks(start, end)
         self.fileHandler.getEvents(start, end, results)
@@ -263,14 +284,17 @@ class EventScanner(Logger):
         callback=None,
         storeResults=True,
     ):
-        IJobManager.state = 2
-        startBlock = IliveScan.last = self.getLastStoredBlock()
+        self.iJobManager.state = 2
+        startBlock = self.iLiveScan.last = self.getLastStoredBlock()
         self.logInfo(f"livescanning from block {startBlock}", True)
         if resultsOut == None:
             resultsOut = []
         while True:
-
-            results = IliveScan.waitResults()
+            if self.rpc:
+                self.rpc.scanLive()
+                results = self.iLiveScan.checkResults()
+            else:
+                results = self.iLiveScan.waitResults()
             resultsOut += results
             if callback != None:
                 callback(resultsOut)
@@ -289,4 +313,18 @@ if __name__ == "__main__":
     from dotenv import load_dotenv
 
     load_dotenv()
-    scan()
+    folderPath = os.getenv("FOLDER_PATH")
+    _configPath = f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
+    with open(_configPath + "/config.json") as f:
+        cfg = json.load(f)
+    fileSettings, scanSettings, rpcSettings, rpcInterfaceSettings, hreSettings = (
+        loadConfig(cfg)
+    )
+    es = EventScanner(
+        fileSettings,
+        scanSettings,
+        rpcSettings,
+        rpcInterfaceSettings,
+        _configPath,
+    )
+    es.scanBlocks()

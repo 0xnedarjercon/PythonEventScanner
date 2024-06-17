@@ -1,30 +1,23 @@
 import logging
 import multiprocessing
 import os
-from configLoader import configPath, folderPath
 import traceback
 from logConfig import logConfig
 
 
-def _locked_emit(emit):
+def _locked_emit(emit, lock):
     def wrapper(record):
-        with log_lock:
+        with lock:
             emit(record)
 
     return wrapper
 
 
-os.makedirs(configPath + "logs/", exist_ok=True)
-log_file = configPath + "logs/" + folderPath + ".log"
-log_lock = multiprocessing.Lock()
-formatter = logging.Formatter("%(asctime)s - %(levelname)-9s - %(message)s")
-baseLogger = logging.getLogger("baseLogger")
-file_handler = logging.FileHandler(log_file)
-file_handler.setFormatter(formatter)
-file_handler.emit = _locked_emit(file_handler.emit)
-
-
 class Logger:
+    fileHandlers = {}
+    logLock = multiprocessing.Lock()
+    formatter = logging.Formatter("%(asctime)s - %(levelname)-9s - %(message)s")
+
     @classmethod
     def setProcessName(self, name):
         if name != "":
@@ -35,12 +28,20 @@ class Logger:
                     name += " "
             multiprocessing.current_process().name = name
 
-    def __init__(self, debugLevel="HIGH"):
-        if debugLevel is not None and debugLevel != "NONE":
-            self.log = baseLogger
+    def __init__(self, path, cfg):
+        debugLevel = cfg["DEBUGLEVEL"]
+        if debugLevel != "NONE":
+            os.makedirs(path + "logs/", exist_ok=True)
+            self.log = logging.getLogger(cfg["LOGNAMES"][0])
             self.log.setLevel(logConfig[debugLevel]["DEBUGLEVEL"])
+            for logName in cfg["LOGNAMES"]:
+                if logName not in Logger.fileHandlers:
+                    fileHandler = logging.FileHandler(f"{path}/logs/{logName}.log")
+                    fileHandler.setFormatter(Logger.formatter)
+                    fileHandler.emit = _locked_emit(fileHandler.emit, Logger.logLock)
+                    Logger.fileHandlers[logName] = fileHandler
+                self.log.addHandler(Logger.fileHandlers[logName])
 
-            self.log.addHandler(file_handler)
         else:
             self.logDebug = self._emptyLog
             self.logInfo = self._emptyLog
@@ -81,3 +82,5 @@ class Logger:
             print(message)
             if trace:
                 traceback.print_exc()
+
+

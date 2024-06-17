@@ -4,12 +4,9 @@ import atexit
 import time
 from web3 import Web3
 from logger import Logger
-from configLoader import configPath, folderPath
-
-log_file = configPath + "logs/" + folderPath + ".log"
 
 
-def runHardhat(cfg):
+def runHardhat(configPath, cfg):
     logName = configPath + "logs/" + cfg["LOGNAME"] + ".log"
     command = ["npx", "hardhat", "node"]
     for arg, value in cfg["ARGS"].items():
