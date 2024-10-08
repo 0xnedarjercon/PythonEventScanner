@@ -1,23 +1,30 @@
 {
-  "RPCSETTINGS": [
-    {
-      "NAME": "",
-      "APIURL": "https://base.llamarpc.com",
-      "MAXCHUNKSIZE": 30000,
-      "STARTCHUNKSIZE": 20,
-      "EVENTSTARGET": 2000,
+  "RPCSETTINGS": {
+    "https://base.blockpi.network/v1/rpc/public": {
+      "MAXCHUNKSIZE": 8000,
+      "STARTCHUNKSIZE": 1000,
+      "EVENTSTARGET": 5000,
       "POLLINTERVAL": 1,
-      "DEBUGLEVEL": "EXTREME",
+      "DEBUGLEVEL": "HIGH",
       "LOGNAMES": [
         ""
       ],
       "ACTIVESTATES": [
-        1
-      ]
+        1,
+        2
+      ],
+      "HRE": ""
     }
-  ],
+  },
+  "W3SETTINGS": {
+    "NUMJOBS": 2,
+    "DEBUGLEVEL": "HIGH",
+    "MAINRPC": true,
+    "LOGNAMES": [
+      ""
+    ]
+  },
   "RPCOVERRIDE": {
-    "APIURL": "",
     "MAXCHUNKSIZE": "",
     "STARTCHUNKSIZE": "",
     "EVENTSTARGET": "",
@@ -28,8 +35,8 @@
   "FILESETTINGS": {
     "SAVEINTERVAL": 600,
     "FILENAME": "basescan",
-    "MAXENTRIES": 1000,
-    "DEBUGLEVEL": "EXTREME",
+    "MAXENTRIES": 10000,
+    "DEBUGLEVEL": "HIGH",
     "LOGNAMES": [
       ""
     ]
@@ -37,8 +44,8 @@
   "SCANSETTINGS": {
     "NAME": "scanner",
     "RPC": true,
-    "STARTBLOCK": 15610777,
-    "ENDBLOCK": 15617778,
+    "STARTBLOCK": 20718664,
+    "ENDBLOCK": "latest",
     "LIVETHRESHOLD": 100,
     "FORCENEW": false,
     "DEBUGLEVEL": "HIGH",
@@ -52,11 +59,12 @@
     },
     "MODE": "ANYCONTRACT",
     "EVENTS": [
-      "Sync"
+      "Sync",
+      "Swap"
     ]
   },
   "RPCINTERFACE": {
-    "DEBUGLEVEL": "EXTREME",
+    "DEBUGLEVEL": "HIGH",
     "LOGNAMES": [
       ""
     ]

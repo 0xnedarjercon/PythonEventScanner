@@ -4,14 +4,16 @@ import time
 from logger import Logger
 
 
+
+
 # currently assumes all files stored are sequential
 class FileHandler(Logger):
     def __init__(
         self,
         fileSettings,
-        configPath,
+        configPath,name
     ):
-        super().__init__(configPath, fileSettings)
+        super().__init__(configPath, fileSettings, name)
         filePath = configPath + "data/"
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
@@ -55,7 +57,8 @@ class FileHandler(Logger):
             self.logInfo(f"current data saved to {self.currentFileName}")
         else:
             self.logDebug(f"{self.currentFile} not saved, no changed data")
-
+    
+    #results array [fromBlock, events, toBlock]
     def process(self, results):
         for result in results:
             self.addToPending(result)
@@ -79,7 +82,7 @@ class FileHandler(Logger):
             )
             numBlocks += self.pending[0][2] - self.pending[0][0]
             self.pending.pop(0)
-        self.logInfo(f"waiting for: {self.latest}")
+        self.logInfo(f"waiting for: {self.latest+1}")
         return numBlocks
 
     def addToPending(self, element):
@@ -167,19 +170,14 @@ class FileHandler(Logger):
 
     def getEvents(self, start, end, results):
         files = self.getFiles()
-        foundStart = False
         for file in files:
-            if file[1] < start:
-                continue
-            data = self.loadFile(self.toFileName(file))
-            # Filter the first matching file
-            if not foundStart:
-                data = {k: v for k, v in data.items() if int(k) >= start}
-                foundStart = True
-            # Filter the last matching file
-            if file[1] > end:
-                data = {k: v for k, v in data.items() if int(k) <= end}
+            if file[1] >= start:
+                data = self.loadFile(self.toFileName(file))
+                if file[0]< start:
+                    data = {key:value for key, value in data.items() if int(key) >= start}
+                if file[1]> end:
+                    data = {key:value for key, value in data.items() if int(key) <= end}
+                    results.append(data)
+                    return results
                 results.append(data)
-                break
-            results.append(data)
         return results

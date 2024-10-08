@@ -8,9 +8,11 @@ import math
 import asyncio
 import traceback
 from hardhat import runHardhat
-from collections import deque
-
-
+import copy
+from multiprocessing.managers import ListProxy, DictProxy
+from utils import blocks, toNative
+from constants import c
+    
 def getW3(cfg):
     apiURL = cfg["APIURL"]
     if apiURL[0:3] == "wss":
@@ -30,40 +32,6 @@ def getW3(cfg):
     return w3, webSocket
 
 
-def getEventData(self, events):
-    decodedEvents = {}
-    for param in events:
-        blockNumber, txHash, address, index = getEventParameters(param)
-        if blockNumber not in decodedEvents:
-            decodedEvents[blockNumber] = {}
-        if txHash not in decodedEvents[blockNumber]:
-            decodedEvents[blockNumber][txHash] = {}
-        if address not in decodedEvents[blockNumber][txHash]:
-            decodedEvents[blockNumber][txHash][address] = {}
-        decodedEvents[blockNumber][txHash][address][index] = {}
-        for eventName, eventParam in param["args"].items():
-            decodedEvents[blockNumber][txHash][address][index][eventName] = eventParam
-    return decodedEvents
-
-
-def decodeEvents(self, events):
-    decodedEvents = {}
-    for param in events:
-        blockNumber, txHash, address, index = getEventParameters(param)
-        if blockNumber not in self.log:
-            self.log[blockNumber] = {}
-        if txHash not in self.log[blockNumber]:
-            self.log[blockNumber][txHash] = {}
-        if address not in decodedEvents:
-            decodedEvents[address] = {}
-        if address not in self.log[blockNumber][txHash]:
-            self.log[blockNumber][txHash][address] = {}
-        self.log[blockNumber][txHash][address][index] = {}
-        decodedEvents[address][index] = {}
-        for eventName, eventParam in param["args"].items():
-            decodedEvents[address][index][eventName] = eventParam
-            self.log[blockNumber][txHash][address][index][eventName] = eventParam
-    return decodedEvents
 
 
 def getEventParameters(param):
@@ -80,160 +48,65 @@ def getEventParameters(param):
     )
 
 
-import pickle
-
 
 class RPC(Logger):
-    def __init__(
-        self,
-        rpcSettings,
-        scanMode,
-        contracts,
-        abiLookups,
-        iFixedScan,
-        iJobManager,
-        iLiveScan,
-        configPath,
-    ):
-        self.apiUrl = rpcSettings["APIURL"]
-        self.iFixedScan = iFixedScan
-        self.iJobManager = iJobManager
-        self.iLiveScan = iLiveScan
-        Logger.setProcessName(rpcSettings["NAME"])
-        super().__init__(configPath, rpcSettings)
-        self.isHH = False
-        if type(rpcSettings["APIURL"]) == dict:
-            self.initHREW3(configPath, rpcSettings["APIURL"])
-        else:
-            self.w3, self.websocket = getW3(rpcSettings)
+
+    def __init__(self, apiUrl, rpcSettings, jobManager, id, configPath):
+        self.apiUrl = apiUrl
+        super().__init__(configPath, rpcSettings, 'rpc')
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
         self.pollInterval = rpcSettings["POLLINTERVAL"]
-        self.contracts = contracts
-        self.abiLookups = abiLookups
         self.jobs = []
         self.failCount = 0
         self.activeStates = rpcSettings["ACTIVESTATES"]
-        self.start = 0
-        self.end = 0
-        self.running = True
-        self.scanMode = scanMode
-        self.logDebug(f"logging enabled")
-        self.completedJobs = deque(maxlen=20)
-        self.evt = []
+        self.jobManager = jobManager
+        self.id = id
 
-    def initHREW3(self, configPath, HRESettings):
-        self.hh = runHardhat(configPath, HRESettings)
-        if "--port" in HRESettings:
-            port = f'http://127.0.0.1:{HRESettings["port"]}'
-        else:
-            port = "http://127.0.0.1:8454"
-        self.w3, self.websocket = getW3({"APIURL": port})
-        self.isHH = True
-        self.logInfo(f"hardhat running on port {port}", True)
-
-    def run(self):
-        state = self.iJobManager.state
-        while state > -1 and self.running == True:
-            self.iJobManager.checkJob(self)
-            if state == 1 and state in self.activeStates:
-                self.runFixed()
-            elif state == 2 and state in self.activeStates:
-                self.runLive()
+    def checkJobs(self, handleErrors = True):
+        succsessfulJobs=[]
+        
+        completedJobs = self.jobManager.checkJobs(self.jobs)
+        for job in completedJobs:
+            if isinstance(job[-1], BaseException):
+                if handleErrors:
+                    self.logInfo(f'error with job {blocks(job)}')
+                    self.handleError(job)
             else:
-                self.checkJobs()
-            state = self.iJobManager.state
-        if self.jobs:
-            for job in self.jobs:
-                self.iFixedScan.addScanRange(job[0], job[1])
+                self.logInfo(f'successful job: {blocks(job)}')
+                succsessfulJobs.append(job)
+        if len(succsessfulJobs)>0:
+            lastJob = succsessfulJobs[-1]
+            self.throttle(lastJob[-1], lastJob[1][0]['toBlock'] - lastJob[1][0]['fromBlock'])
+        return succsessfulJobs
 
-    def runFixed(self):
-        while self.iJobManager.state == 1:
-            self.iJobManager.checkJob(self)
-            self.fixedScan()
+                
+    def takeJob(self, remaining, filter, consume = True):
+            startBlock = remaining[0]
+            endBlock = min(remaining[0] + self.currentChunkSize, remaining[1])
+            if consume:
+                remaining[0] = endBlock + 1
+            newJob = (startBlock, endBlock)
+            rpcFilter = filter.copy()
+            rpcFilter['fromBlock'] = newJob[0]
+            rpcFilter['toBlock'] = newJob[1]
+            self.addGetLogsJob(rpcFilter)
+            
+    def removeJobs(self, methods):
+        jobsLength = len(self.jobs)
+        for i in range(jobsLength):
+            j = jobsLength-i-1
+            if self.jobs[j][c.TARGET]&self.id and self.jobs[j][c.METHOD] in methods:
+                self.jobs.pop(j)
+        return self.jobManager.popAllJobs(['get_logs'], self.id)
 
-    def checkJobs(self):
-        try:
-            self.iJobManager.checkJob(self)
-        except Exception as e:
-            print(e)
+            
+    def addGetLogsJob(self, rpcFilter):
+            self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, target = self.id, wait=False))
+            self.logInfo(f"job added: {blocks(rpcFilter)} ") 
 
-    def fixedScan(self):
-        if len(self.jobs) == 0:
-            newJob = self.iFixedScan.getScanJob(self.currentChunkSize)
-            if newJob != [] and newJob[0] != newJob[1]:
-                self.jobs.append(newJob)
-                self.logInfo(f"job added: {self.jobs} ")
-        else:
-            try:
-                job = self.nextJob()
-                self.logInfo(f"starting job {job}")
-                events = self.scanChunk(job[0], job[1])
-                self.iFixedScan.addResults([job[0], self.decodeEvents(events), job[1]])
-                self.throttle(events, self.jobs[0][1] - self.jobs[0][0])
-                self.logInfo(
-                    f"processed events: {len(events)}, from {self.jobs[0][0]} to {self.jobs[0][1]} ({self.jobs[0][1]-self.jobs[0][0]}), throttled to {self.currentChunkSize}"
-                )
-                self.jobs.pop(0)
-                self.failCount = 0
-            except Exception as e:
-                self.handleError(e)
-
-    def runLive(self):
-        last = self.iLiveScan.last
-        self.logInfo(f"livescan started at block {last}")
-        if self.websocket:
-            self.filterParams = self.getFilter(last, "latest")
-            self.filterParams = self.w3.eth.filter(self.filterParams)
-            while self.iJobManager.state == 2:
-                last = self.iLiveScan.last
-                try:
-                    self.iJobManager.checkJob(self)
-                    startTime = time.time()
-                    self.logInfo("request latest events")
-                    newEvents = self.filterParams.get_new_entries()
-                    if len(newEvents) > 0:
-                        self.logInfo(f"updating results with {len(newEvents)} events")
-                        self.iLiveScan.addResults(
-                            [last, self.decodeEvents(newEvents), -1]
-                        )
-                    delta = time.time() - startTime
-                    if delta < self.pollInterval:
-                        time.sleep(self.pollInterval - delta)
-                        self.failCount = 0
-                except Exception as e:
-                    self.logWarn(
-                        f"error: {type(e)}, {e}, {traceback.format_exc()}", True
-                    )
-        else:
-            while self.iJobManager.state == 2:
-                try:
-                    self.scanLive()
-                except Exception as e:
-                    self.logWarn(
-                        f"error: {type(e)}, {e}, {traceback.format_exc()}", True
-                    )
-
-    def scanLive(self):
-        self.iJobManager.checkJob(self)
-        last = self.iLiveScan.last
-        self.logInfo(f"request new events from {last}")
-        self.filterParams = self.getFilter(last, last + 5)
-        startTime = time.time()
-        newEvents = self.w3.eth.get_logs(self.filterParams)
-        if len(newEvents) > 0:
-            self.logInfo(f"updating results with {len(newEvents)} new events")
-            self.iLiveScan.addResults([last, self.decodeEvents(newEvents), -1])
-        else:
-            current = self.w3.eth.get_block_number() - 2
-            if current > last:
-                self.iLiveScan.updateLast(current)
-        delta = time.time() - startTime
-        if delta < self.pollInterval:
-            time.sleep(self.pollInterval - delta)
-        self.failCount = 0
-
+    #---------------------event Decoding functions----------------------------------
     def decodeEvents(self, events):
         decodedEvents = []
         if self.scanMode == "ANYEVENT":
@@ -256,129 +129,7 @@ class RPC(Logger):
                     )
                     decodedEvents.append(evt)
         return self.getEventData(decodedEvents)
-
-    def nextJob(self):
-        length = self.jobs[0][1] - self.jobs[0][0]
-        if length > self.currentChunkSize + 1:
-            self.logInfo(
-                f"existing job too big, splitting {length}, {self.currentChunkSize}"
-            )
-            self.splitJob(math.ceil(length / self.currentChunkSize))
-        return self.jobs[0]
-
-    def scanChunk(self, start, end):
-        filterParams = self.getFilter(start, end)
-        eventlogs = self.w3.eth.get_logs(filterParams)
-        self.logInfo(f"received events: {len(eventlogs)}")
-        return eventlogs
-
-    def getFilter(self, start, end):
-        if self.scanMode == "ANYEVENT":
-            return {
-                "fromBlock": start,
-                "toBlock": end,
-                "topics": [],
-                "address": list(self.contracts.keys()),
-            }
-        elif self.scanMode == "ANYCONTRACT":
-            return {
-                "fromBlock": start,
-                "toBlock": end,
-                "topics": [list(self.abiLookups.keys())],
-                "address": [],
-            }
-
-    def throttle(self, events, blockRange):
-        if len(events) > 0:
-            ratio = self.eventsTarget / (len(events))
-            targetBlocks = math.ceil(ratio * blockRange)
-            self.currentChunkSize = targetBlocks
-            self.currentChunkSize = max(self.currentChunkSize, 1)
-
-    def getFactor(self, current, target):
-        factor = 1
-        while current / factor > target:
-            factor += 1
-        return factor
-
-    def handleError(self, e):
-        if type(e) == ValueError:
-            if e.args[0]["message"] == "block range is too wide":
-                self.maxChunk = int(self.currentChunkSize * 0.98)
-                self.currentChunkSize = self.maxChunk
-                self.logInfo(f"blockrange too wide, reduced max to {self.maxChunk}")
-            elif e.args[0]["message"] == "invalid params":
-                if "Try with this block range" in e.args[0]["data"]:
-                    match = re.search(
-                        r"\[0x([0-9a-fA-F]+), 0x([0-9a-fA-F]+)\]", e.args[0]["data"]
-                    )
-                    if match:
-                        start_hex, end_hex = match.groups()
-                        suggestedLength = int(end_hex, 16) - int(start_hex, 16)
-                        self.logInfo(
-                            f"too many events, suggested range {suggestedLength}"
-                        )
-                        self.splitJob(
-                            math.ceil(self.currentChunkSize / suggestedLength)
-                        )
-                    else:
-                        self.logWarn(
-                            f"unable to find suggested block range, splitting jobs"
-                        )
-                        self.splitJob(2)
-
-            elif e.args[0]["message"] == "rate limit exceeded":
-                self.logInfo(f"rate limited trying again")
-                time.sleep(0.5)
-            elif "response size should not greater than" in e.args[0]["message"]:
-                self.logInfo(f"too much data, splitting job, {e}")
-                self.splitJob(2)
-            else:
-                self.logWarn(
-                    f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
-                    True,
-                )
-                self.splitJob(2)
-                self.failCount += 1
-        elif type(e) == asyncio.exceptions.TimeoutError:
-            self.logInfo(f"timeout error, splitting jobs")
-            self.splitJob(2)
-            self.failCount += 1
-        elif type(e) == KeyboardInterrupt:
-            pass
-        else:
-            self.logWarn(
-                f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
-                True,
-            )
-            time.sleep(0.5)
-            self.splitJob(2)
-            self.failCount += 1
-        if self.failCount == 10:
-            for job in self.jobs:
-                self.iFixedScan.addScanRange(job[0], job[1])
-        elif self.failCount > 20:
-            for job in self.jobs:
-                self.iFixedScan.addScanRange(job[0], job[1])
-            self.logCritical("too many failures, rpc shutting down")
-            self.running = False
-
-    def splitJob(self, numJobs, reduceChunkSize=True):
-        oldJob = self.jobs[0]
-        chunkSize = math.ceil((oldJob[1] - oldJob[0]) / numJobs)
-        if reduceChunkSize:
-            self.currentChunkSize = max(chunkSize, 1)
-
-        current = oldJob[0]
-        for i in range(numJobs):
-            self.jobs.insert(i + 1, [current, current + chunkSize])
-            current += chunkSize + 1
-
-        self.logInfo(
-            f"split Job {self.jobs[0]} to {chunkSize} blocks: {self.jobs[1:1+numJobs]}"
-        )
-        self.jobs.pop(0)
-
+    
     def getEventData(self, events):
         decodedEvents = {}
         for param in events:
@@ -395,3 +146,109 @@ class RPC(Logger):
                     eventName
                 ] = eventParam
         return decodedEvents
+
+    def throttle(self, events, blockRange):
+        if len(events) > 0:
+            ratio = self.eventsTarget / (len(events))
+            targetBlocks = math.ceil(ratio * blockRange)
+            self.currentChunkSize = min(targetBlocks, self.maxChunkSize)
+            self.currentChunkSize = max(self.currentChunkSize, 1)
+            self.logInfo(
+                    f"processed events: {len(events)}, ({blockRange}) blocks, throttled to {self.currentChunkSize}"
+                )
+    #-----------------------error handling------------------------------------
+    def handleRangeTooLargeError(self, failingJob):
+        try:
+            for word in failingJob[-1].args[0]["message"].split(' '):
+                word = (word.replace('k', '000'))
+                if word[0].isdigit():
+                    maxBlock = int(word)
+                    if maxBlock > self.currentChunkSize:
+                        raise Exception
+                    else:
+                        filter = failingJob[1][0]
+                        self.maxChunk = maxBlock
+                        self.currentChunkSize = maxBlock                                
+        except Exception as error:
+                    self.maxChunk = int(self.currentChunkSize * 0.95)
+                    self.currentChunkSize = min(self.maxChunk, self.currentChunkSize )
+        self.splitJob(
+                    math.ceil((filter['toBlock']-filter['fromBlock']) / maxBlock), failingJob
+                )
+        self.logInfo(f"blockrange too wide, reduced max to {self.currentChunkSize}")
+    def handleInvalidParamsError(self, failingJob):
+        if "Try with this block range" in failingJob[-1].args[0]["data"]:
+            match = re.search(
+                r"\[0x([0-9a-fA-F]+), 0x([0-9a-fA-F]+)\]", failingJob[-1].args[0]["data"]
+            )
+            if match:
+                start_hex, end_hex = match.groups()
+                suggestedLength = int(end_hex, 16) - int(start_hex, 16)
+                self.logInfo(
+                    f"too many events, suggested range {suggestedLength}"
+                )
+                self.splitJob(
+                    math.ceil(self.currentChunkSize / suggestedLength), failingJob
+                )
+            else:
+                self.logWarn(
+                    f"unable to find suggested block range, splitting jobs"
+                )
+                self.splitJob(2, failingJob)
+    def handleResponseSizeExceeded(self, failingJob):
+        self.eventsTarget = self.eventsTarget*0.95
+        self.splitJob(2, failingJob)
+    def handleError(self, failingJob):
+        e = failingJob[-1]
+        if type(e) == ValueError:
+            if e.args[0]["message"] == "block range is too wide" or 'range is too large' in e.args[0]["message"] :
+                self.handleRangeTooLargeError(failingJob)
+            elif e.args[0]["message"] == "invalid params" or "response size should not greater than" in e.args[0]["message"]:
+                self.handleInvalidParamsError(failingJob)
+            elif "response size exceed" in e.args[0]["message"]:
+                self.handleResponseSizeExceeded(failingJob)
+                
+            elif e.args[0]["message"] == "rate limit exceeded":
+                self.logInfo(f"rate limited trying again")     
+            else:
+                self.logWarn(
+                    f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
+                    True,
+                )
+                self.splitJob(2, failingJob)
+                self.failCount += 1
+        elif type(e) == asyncio.exceptions.TimeoutError:
+            self.logInfo(f"timeout error, splitting jobs")
+            self.splitJob(2, failingJob)
+            self.failCount += 1
+        elif type(e) == KeyboardInterrupt:
+            pass
+        else:
+            self.logWarn(
+                f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
+                True,
+            )
+            self.splitJob(2, failingJob)
+            self.failCount += 1
+
+    def splitJob(self,numJobs, failingJob ,chunkSize =None, reduceChunkSize=True):
+        if type(chunkSize) !=(int):
+            chunkSize = math.ceil((failingJob[1][0]['toBlock'] - failingJob[1][0]['fromBlock']) / numJobs)
+        if reduceChunkSize:
+            self.currentChunkSize = max(chunkSize, 1)
+        removedJobs = self.removeJobs(['get_logs'])
+        removedJobs.insert(0, failingJob)
+        newJobs = []
+        for job in (removedJobs):
+            filter = job[1][0]
+            currentBlock = filter['fromBlock'] 
+            while currentBlock <= job[1][0]['toBlock']:
+                _filter = copy.deepcopy(filter)
+                _filter['fromBlock'] = currentBlock
+                _filter['toBlock'] = min(currentBlock+chunkSize, filter['toBlock'])
+                newJobs.append(['get_logs', (_filter,),  {},self.id, None])
+                currentBlock = _filter['toBlock'] + 1
+        self.jobs += self.jobManager.addJobs(newJobs)
+
+
+

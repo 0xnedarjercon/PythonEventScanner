@@ -15,3 +15,8 @@ copy template folder and rename, update config.json file to your needs explanati
 update .env and setup with new folder path
 run the following command or directly from IDE:
 python ./eventScanner.py
+
+
+Multi web3 class will spin up processes for each rpc provided and one for itself if configured
+
+Scanner will create its own Multi web3 instance on creation of one is not passed to be run on the same thread/process

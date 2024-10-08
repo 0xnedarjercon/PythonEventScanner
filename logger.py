@@ -28,56 +28,69 @@ class Logger:
                     name += " "
             multiprocessing.current_process().name = name
 
-    def __init__(self, path, cfg):
-        debugLevel = cfg["DEBUGLEVEL"]
-        if debugLevel != "NONE":
-            os.makedirs(path + "logs/", exist_ok=True)
-            self.log = logging.getLogger(cfg["LOGNAMES"][0])
-            self.log.setLevel(logConfig[debugLevel]["DEBUGLEVEL"])
-            for logName in cfg["LOGNAMES"]:
-                if logName not in Logger.fileHandlers:
-                    fileHandler = logging.FileHandler(f"{path}/logs/{logName}.log")
-                    fileHandler.setFormatter(Logger.formatter)
-                    fileHandler.emit = _locked_emit(fileHandler.emit, Logger.logLock)
-                    Logger.fileHandlers[logName] = fileHandler
-                self.log.addHandler(Logger.fileHandlers[logName])
+    def __init__(self, path='', cfg = '', name = ''):
+        if path and cfg:
+            debugLevel = cfg["DEBUGLEVEL"]
+            if debugLevel != "NONE":
+                self.name = name
+                self.loggers = []
+                os.makedirs(path + "logs/", exist_ok=True)
+                for logName in cfg["LOGNAMES"]:
+                    self.loggers.append(logging.getLogger(logName))
+                    self.loggers[-1].setLevel(logConfig[debugLevel]["DEBUGLEVEL"])
+                    if logName not in Logger.fileHandlers:
+                        fileHandler = logging.FileHandler(f"{path}/logs/{logName}.log")
+                        fileHandler.setFormatter(Logger.formatter)
+                        fileHandler.emit = _locked_emit(fileHandler.emit, Logger.logLock)
+                        Logger.fileHandlers[logName] = fileHandler
+                        self.loggers[-1].addHandler(Logger.fileHandlers[logName])
+                        print(f'{logName} added fileHandler')
 
+            else:
+                self.logDebug = self._emptyLog
+                self.logInfo = self._emptyLog
+                self.logWarn = self._emptyLog
+                self.logCritical = self._emptyLog
         else:
-            self.logDebug = self._emptyLog
-            self.logInfo = self._emptyLog
-            self.logWarn = self._emptyLog
-            self.logCritical = self._emptyLog
-
+                self.logDebug = self._emptyLog
+                self.logInfo = self._emptyLog
+                self.logWarn = self._emptyLog
+                self.logCritical = self._emptyLog        
+        
     def _emptyLog(self, data, display=False, trace=False):
         pass
 
     def logDebug(self, message, display=False, trace=False):
-        message = f"{multiprocessing.current_process().name} - {message}"
-        self.log.debug(message)
+        message = f"{self.name} - {message}"
+        for logger in self.loggers:
+            logger.debug(message)
         if display:
             print(message)
         if trace:
             traceback.print_exc()
 
     def logInfo(self, message, display=False, trace=False):
-        message = f"{multiprocessing.current_process().name} - {message}"
-        self.log.info(message)
+        message = f"{self.name} - {message}"
+        for logger in self.loggers:
+            logger.info(message)
         if display:
             print(message)
         if trace:
             traceback.print_exc()
 
     def logWarn(self, message, display=True, trace=True):
-        message = f"{multiprocessing.current_process().name} - {message}"
-        self.log.warning(message)
+        message = f"{self.name} - {message}"
+        for logger in self.loggers:
+            logger.warn(message)
         if display:
             print(message)
             if trace:
                 traceback.print_exc()
 
     def logCritical(self, message, display=True, trace=True):
-        message = f"{multiprocessing.current_process().name} - {message}"
-        self.log.critical(message)
+        message = f"{self.name} - {message}"
+        for logger in self.loggers:
+            logger.critical(message)
         if display:
             print(message)
             if trace:
