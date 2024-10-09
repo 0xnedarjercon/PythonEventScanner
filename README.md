@@ -19,4 +19,4 @@ python ./eventScanner.py
 
 Multi web3 class will spin up processes for each rpc provided and one for itself if configured
 
-Scanner will create its own Multi web3 instance on creation of one is not passed to be run on the same thread/process
+Scanner will create its own Multi web3 instance on creation if one is not passed to be run on the same thread/process

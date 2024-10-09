@@ -12,14 +12,17 @@ ListProxy.__str__ = listproxy_str
 
 # extracts the blocks from a job
 def blocks(filter):
-    if type(filter) == list or type(filter) == ListProxy:
-        #get args from job
-        filter = filter[1]
-    if type(filter) == tuple:
-        #get filter from args
-        filter = filter[0]
-    #return the blocks
-    return (filter['fromBlock'], filter['toBlock'], filter['toBlock']-filter['fromBlock'])
+    try:
+        if type(filter) == list or type(filter) == ListProxy:
+            #get args from job
+            filter = filter[1]
+        if type(filter) == tuple:
+            #get filter from args
+            filter = filter[0]
+        #return the blocks
+        return (filter['fromBlock'], filter['toBlock'], filter['toBlock']-filter['fromBlock'])
+    except:
+        return 'not get_logs'
 
 # converts multiprocessing types to native types for easier debugging
 def toNative(obj):

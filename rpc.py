@@ -53,7 +53,7 @@ class RPC(Logger):
 
     def __init__(self, apiUrl, rpcSettings, jobManager, id, configPath):
         self.apiUrl = apiUrl
-        super().__init__(configPath, rpcSettings, 'rpc')
+        super().__init__('rpc')
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
@@ -63,6 +63,9 @@ class RPC(Logger):
         self.activeStates = rpcSettings["ACTIVESTATES"]
         self.jobManager = jobManager
         self.id = id
+        self.lastBlock = 0
+        self.lastTime = 0
+        Logger.setProcessName(apiUrl)
 
     def checkJobs(self, handleErrors = True):
         succsessfulJobs=[]
@@ -71,8 +74,10 @@ class RPC(Logger):
         for job in completedJobs:
             if isinstance(job[-1], BaseException):
                 if handleErrors:
-                    self.logInfo(f'error with job {blocks(job)}')
+                    self.logInfo(f'error with job {blocks(job)} {job[-1]} {self.apiUrl}')
                     self.handleError(job)
+                else:
+                    self.logInfo('not handling errors')
             else:
                 self.logInfo(f'successful job: {blocks(job)}')
                 succsessfulJobs.append(job)
@@ -89,22 +94,14 @@ class RPC(Logger):
                 remaining[0] = endBlock + 1
             newJob = (startBlock, endBlock)
             rpcFilter = filter.copy()
-            rpcFilter['fromBlock'] = newJob[0]
-            rpcFilter['toBlock'] = newJob[1]
+            rpcFilter['fromBlock'] = startBlock
+            rpcFilter['toBlock'] = endBlock
             self.addGetLogsJob(rpcFilter)
-            
-    def removeJobs(self, methods):
-        jobsLength = len(self.jobs)
-        for i in range(jobsLength):
-            j = jobsLength-i-1
-            if self.jobs[j][c.TARGET]&self.id and self.jobs[j][c.METHOD] in methods:
-                self.jobs.pop(j)
-        return self.jobManager.popAllJobs(['get_logs'], self.id)
-
+ 
             
     def addGetLogsJob(self, rpcFilter):
             self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, target = self.id, wait=False))
-            self.logInfo(f"job added: {blocks(rpcFilter)} ") 
+
 
     #---------------------event Decoding functions----------------------------------
     def decodeEvents(self, events):
@@ -177,7 +174,7 @@ class RPC(Logger):
                 )
         self.logInfo(f"blockrange too wide, reduced max to {self.currentChunkSize}")
     def handleInvalidParamsError(self, failingJob):
-        if "Try with this block range" in failingJob[-1].args[0]["data"]:
+        if "Try with this block range" in failingJob[-1].args[0]["message"]:
             match = re.search(
                 r"\[0x([0-9a-fA-F]+), 0x([0-9a-fA-F]+)\]", failingJob[-1].args[0]["data"]
             )
@@ -199,39 +196,48 @@ class RPC(Logger):
         self.eventsTarget = self.eventsTarget*0.95
         self.splitJob(2, failingJob)
     def handleError(self, failingJob):
-        e = failingJob[-1]
-        if type(e) == ValueError:
-            if e.args[0]["message"] == "block range is too wide" or 'range is too large' in e.args[0]["message"] :
-                self.handleRangeTooLargeError(failingJob)
-            elif e.args[0]["message"] == "invalid params" or "response size should not greater than" in e.args[0]["message"]:
-                self.handleInvalidParamsError(failingJob)
-            elif "response size exceed" in e.args[0]["message"]:
-                self.handleResponseSizeExceeded(failingJob)
+        if failingJob[0] == 'get_logs':
+            self.logInfo('get logs error')
+            e = failingJob[-1]
+            if type(e) == ValueError:
+                if e.args[0]["message"] == "block range is too wide" or 'range is too large' in e.args[0]["message"] :
+                    self.handleRangeTooLargeError(failingJob)
+                elif e.args[0]["message"] == "invalid params" or "response size should not greater than" in e.args[0]["message"]:
+                    self.handleInvalidParamsError(failingJob)
+                elif "response size exceed" in e.args[0]["message"]:
+                    self.handleResponseSizeExceeded(failingJob)
+                    
+                elif e.args[0]["message"] == "rate limit exceeded":
+                    self.logInfo(f"rate limited trying again")     
+                else:
+                    self.logWarn(
+                        f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
+                        True,
+                    )
+                    self.splitJob(2, failingJob)
+                    self.failCount += 1
+            elif type(e) == asyncio.exceptions.TimeoutError:
                 
-            elif e.args[0]["message"] == "rate limit exceeded":
-                self.logInfo(f"rate limited trying again")     
+                self.logInfo(f"timeout error, splitting jobs")
+                self.splitJob(2, failingJob)
+                self.failCount += 1
+            elif type(e) == KeyboardInterrupt:
+                pass
             else:
                 self.logWarn(
-                    f"unhandled error {type(e), e}, {traceback.format_exc()} splitting jobs",
+                    f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
                     True,
                 )
                 self.splitJob(2, failingJob)
                 self.failCount += 1
-        elif type(e) == asyncio.exceptions.TimeoutError:
-            self.logInfo(f"timeout error, splitting jobs")
-            self.splitJob(2, failingJob)
-            self.failCount += 1
-        elif type(e) == KeyboardInterrupt:
-            pass
         else:
             self.logWarn(
-                f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
-                True,
-            )
-            self.splitJob(2, failingJob)
-            self.failCount += 1
+                    f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
+                    True,
+                )
 
     def splitJob(self,numJobs, failingJob ,chunkSize =None, reduceChunkSize=True):
+        self.logInfo(f'spitting jobs due to {blocks(failingJob)}')
         if type(chunkSize) !=(int):
             chunkSize = math.ceil((failingJob[1][0]['toBlock'] - failingJob[1][0]['fromBlock']) / numJobs)
         if reduceChunkSize:
@@ -240,6 +246,7 @@ class RPC(Logger):
         removedJobs.insert(0, failingJob)
         newJobs = []
         for job in (removedJobs):
+            self.logInfo(f'spitting jobs {blocks(failingJob)}')
             filter = job[1][0]
             currentBlock = filter['fromBlock'] 
             while currentBlock <= job[1][0]['toBlock']:
@@ -248,7 +255,17 @@ class RPC(Logger):
                 _filter['toBlock'] = min(currentBlock+chunkSize, filter['toBlock'])
                 newJobs.append(['get_logs', (_filter,),  {},self.id, None])
                 currentBlock = _filter['toBlock'] + 1
+                self.logInfo(f'added job {blocks(job)}')
         self.jobs += self.jobManager.addJobs(newJobs)
 
 
+           
+    def removeJobs(self, methods):
+        removedJobs = self.jobManager.popAllJobs(['get_logs'], self.id)
+        jobsLength = len(self.jobs)
+        for i in range(jobsLength):
+            j = jobsLength-i-1
+            if self.jobs[j] in removedJobs:
+                self.jobs.pop(j)
+        return removedJobs
 

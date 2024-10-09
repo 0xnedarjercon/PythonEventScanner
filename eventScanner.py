@@ -66,17 +66,17 @@ class EventScanner(Logger):
         sharedResult = None,
         mw3 = None
     ):
-
+        # Logger.setProcessName('scanner')
         fileSettings, scanSettings, rpcSettings, rpcInterfaceSettings, hreSettings, web3Settings = (
             loadConfig(_configPath + "/config.json")
     )
-
+        self.live = False
         self.initMw3(sharedResult, jobManager, mw3, manager, configPath, scanSettings)
         atexit.register(self.teardown)
         self.configPath = configPath
-        Logger.setProcessName(scanSettings["NAME"])
-        super().__init__(configPath, scanSettings, 'es')
+        Logger.setProcessName('scanner')
         self.loadSettings(scanSettings, rpcSettings, rpcInterfaceSettings)
+        super().__init__('es')
         self.fileHandler = FileHandler(
             fileSettings,
             configPath, 'fh'
@@ -243,6 +243,7 @@ class EventScanner(Logger):
                 "topics": [list(self.abiLookups.keys())],
                 "address": [],
             }
+    #scans a fixed range of blocks
     def scanFixedEnd(self, start, endBlock):
         filterParams = self.getFilter(start, endBlock)
         cyclicGetLogs = self.mw3.setup_get_logs(filterParams).cyclic
@@ -258,11 +259,7 @@ class EventScanner(Logger):
                 scanResults = self.mw3.results.get()
                 storedData = []
                 if len(scanResults)>0:
-                    for scanResult in scanResults:
-                        decodedEvents = self.decodeEvents(scanResult[-1])
-                        self.logInfo(f"events found: {len(decodedEvents)}  {blocks(scanResult)}")
-                        storedData.append([scanResult[1][0]['fromBlock'], decodedEvents, scanResult[1][0]['toBlock']])
-                    numBlocks = self.fileHandler.process(storedData)
+                    numBlocks = self.storeData(scanResults)
                     self.updateProgress(
                         progress_bar,
                         startTime,
@@ -280,7 +277,20 @@ class EventScanner(Logger):
         )
         self.fileHandler.save()
         return endBlock
-
+    
+    def storeData(self, scanResults, save = False):
+        storedData = []
+        if len(scanResults)>0:
+            for scanResult in scanResults:
+                decodedEvents = self.decodeEvents(scanResult[-1])
+                self.logInfo(f"events found: {len(decodedEvents)}  {blocks(scanResult)}")
+                storedData.append([scanResult[1][0]['fromBlock'], decodedEvents, scanResult[1][0]['toBlock']])
+            if save:
+                self.fileHandler.save()
+            return self.fileHandler.process(storedData)
+        else:
+            return 0
+    #scans the specified range of blocks, thne transitions to live mode, polling for latest blocks
     def scanBlocks(self, start=None, end=None, resultsOut=None, rpcs = None, continuous = False):
         if start is None:
             start = self.startBlock
@@ -294,16 +304,17 @@ class EventScanner(Logger):
             self.scanMissingBlocks(start, end)
             return
         else:
-            while True:
+            _end = self.getCurrentBlock()
+            while _end- self.fileHandler.latest <=  self.liveThreshold:
                 _end = self.getCurrentBlock()
                 self.scanMissingBlocks(start, _end)
-                if self.fileHandler.latest >= _end - self.liveThreshold:
-                    filterParams = self.getFilter(self.fileHandler.latest , end)
-                    cyclicGetLogs=self.mw3.setup_get_logs(filterParams).cyclic
-                    while True:
-                        cyclicGetLogs()
-                        # scanResults = self.results.get()
-                        time.sleep(0.001)
+            self.logInfo('------------------going into live mode------------------', True)
+            self.fileHandler.setup(start)
+            filterParams = self.getFilter(self.fileHandler.latest+1 , end)
+            self.mw3.setup_get_logs(filterParams)
+            self.mw3.mGet_logsLatest()
+            self.live = True
+
 
 
     def scanMissingBlocks(self, start, end):
@@ -341,3 +352,11 @@ if __name__ == "__main__":
         _configPath,
     )
     es.scanBlocks()
+    while not es.live:
+        time.sleep(1)
+    while es.live:
+        results = es.results.get()
+        #do stuff with the data here
+        es.storeData(results)
+        print(results)
+        time.sleep(1)

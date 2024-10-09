@@ -4,4 +4,4 @@ class c:
     KWARGS=2
     TARGET=3
     RESULT=4   
-    wait = 0.1
+    WAIT = 0.1
