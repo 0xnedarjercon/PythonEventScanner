@@ -5,6 +5,7 @@ from rpc import RPC
 import atexit
 import copy
 import time
+from utils import getLastBlock
 from logger import Logger
 from configLoader import loadConfig
 from hardhat import runHardhat
@@ -129,10 +130,10 @@ class MultiWeb3(Logger):
         for rpc in self.usedRpcs:
                 res = rpc.checkJobs()
                 if res is not None and len(res)>0:  
-                    self.lastBlock = max(self.getLastBlock(res[-1][-1]), self.lastBlock)                                 
+                    self.lastBlock = max(getLastBlock(res[-1][-1]), self.lastBlock)                                 
                     self.results.addResults(res)  
                 while len(rpc.jobs) <=self.numJobs and self.remaining[0] <= self.remaining[1]: 
-                    rpc.takeJob(self.remaining, self.filter) 
+                    rpc.takeJob(self.remaining, self.filter, callback = callback) 
                     
     # for running synchronously in the main process/thread when scanning to latest block,
     # should be called cyclically after mget_logs               
@@ -143,12 +144,7 @@ class MultiWeb3(Logger):
             self.logInfo(f'going live {rpc.apiUrl}')
             self.jobManager.addJob('live', self.filter,20,  target = rpc.id, wait = False, *args, **kwargs)
 
-    #returns the last blockNumber from the results of get_logs
-    def getLastBlock(self, eventData):
-        if len(eventData)>0:
-            return eventData[-1]['blockNumber']  
-        else:
-            return 0
+
     
 # if __name__ == '__main__':
 

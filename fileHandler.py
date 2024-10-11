@@ -13,7 +13,7 @@ class FileHandler(Logger):
         fileSettings,
         configPath,name
     ):
-        super().__init__('fh')
+        super().__init__('fh', fileSettings["LOGNAMES"])
         filePath = configPath + "data/"
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None
@@ -142,7 +142,6 @@ class FileHandler(Logger):
             self.currentData = self.loadFile(self.currentFileName)
 
         self.logDebug(f"setup complete, {self.currentFile} waiting for {self.latest}")
-
         return self.latest
 
     def checkMissing(self, start, end):

@@ -75,8 +75,8 @@ class Worker(Process, Logger):
                     lastBlock = max(getLastBlock(results), self.lastBlock)
                     if callback != None:
                         results = callback(results)
-                    self.logInfo(f'added results {lastBlock} {self.apiUrl}')
-                    self.results.addResults(self.manager.list(self.manager.list(['get_logs_live', (filter,), {}, self.id, results])))
+                        self.logInfo(f'live job completed {blocks(filter)}')
+                    self.results.append(['get_logs_live', (filter,), {}, self.id, results])
             except Exception as e:
                 self.logWarn(f'error in livescan {e}')
                 time.sleep(5)
@@ -99,9 +99,12 @@ class Worker(Process, Logger):
             attr = self.getW3Attr(method)
             if callable(attr):
                 try:
-                    res=  attr(*args, **kwargs)
+                    callback = None
                     if 'callback' in kwargs:
-                        res = kwargs['callback'](res)
+                        callback = kwargs.pop('callback')
+                    res=  attr(*args, **kwargs)
+                    if callback:
+                        res = callback(res)
                     return res
                 except Exception as e:
                     return e
@@ -129,8 +132,6 @@ class SharedResult(Logger):
             self.list.append(val)
             
     def addResults(self, val):
-        for _val in val:
-            self.logInfo(f'sharedResultAdded: {blocks(_val)}, {val[0]}')
         with self.lock:
             self.list+=val
 
@@ -150,7 +151,6 @@ class SharedResult(Logger):
                     val = copy.deepcopy(self.list)
                 return val
             else:
-                self.logInfo('no results')
                 return []
             
             

@@ -47,10 +47,12 @@ def toNative(obj):
         return {key: toNative(value) for key, value in obj.items()}
     else:
         return obj
-# returns the last block with an event from an eth.get_logs call
+# returns the last block with an event from an eth.get_logs call, also handles if it has been decoded
 def getLastBlock( eventData):
+    if type(eventData) == dict:
+        return int(tuple(eventData.keys())[-1])
     if len(eventData)>0:
-        return eventData[-1]['blockNumber']  
+        return int(eventData[-1]['blockNumber']  )
     else:
         return 0  
 # formats decoded event data to a nested dictionary of 

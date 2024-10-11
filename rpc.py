@@ -68,7 +68,7 @@ class RPC(Logger):
 
 
     #takes a eth.get_logs job based on its scan parameters and the remaining range to be scanned
-    def takeJob(self, remaining, filter, consume = True):
+    def takeJob(self, remaining, filter, consume = True, callback = None):
             startBlock = remaining[0]
             endBlock = min(remaining[0] + self.currentChunkSize, remaining[1])
             if consume:
@@ -77,11 +77,11 @@ class RPC(Logger):
             rpcFilter = filter.copy()
             rpcFilter['fromBlock'] = startBlock
             rpcFilter['toBlock'] = endBlock
-            self.addGetLogsJob(rpcFilter)
+            self.addGetLogsJob(rpcFilter, callback = callback)
  
     #wraps a filter into a get_logs job and adds it to the job manager
-    def addGetLogsJob(self, rpcFilter):
-            self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, target = self.id, wait=False))
+    def addGetLogsJob(self, rpcFilter, callback = None):
+            self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, callback=callback, target = self.id, wait=False))
     
     #checks for any completed jobs from the worker and returns them, handles rpc errors
     def checkJobs(self, handleErrors = True):

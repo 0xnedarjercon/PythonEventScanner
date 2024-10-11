@@ -212,6 +212,10 @@ class EventScanner(Logger):
     #scans a fixed range of blocks
     def scanFixedEnd(self, start, endBlock, callback = None):
         filterParams = self.getFilter(start, endBlock)
+        if callback != None:
+            decoded = True
+        else:
+            decoded = False
         cyclicGetLogs = self.mw3.setup_get_logs(filterParams, callback = callback).cyclic
         startTime = time.time()
         totalBlocks = endBlock - start
@@ -221,11 +225,11 @@ class EventScanner(Logger):
         )
         with tqdm(total=endBlock - start, disable=self.showProgress) as progress_bar:
             while self.fileHandler.latest < endBlock:
-                cyclicGetLogs()
+                cyclicGetLogs(callback = callback)
                 scanResults = self.mw3.results.get()
                 storedData = []
                 if len(scanResults)>0:
-                    numBlocks = self.storeResults(scanResults)
+                    numBlocks = self.storeResults(scanResults, decoded = decoded, endSourceFilter = True)
                     self.updateProgress(
                         progress_bar,
                         startTime,
@@ -263,19 +267,33 @@ class EventScanner(Logger):
         progress_bar.update(numBlocks)
         
     #stores get_logs results into the file handler
-    def storeResults(self, scanResults, forceSave = False, decoded = False):
+    def storeResults(self, scanResults, forceSave = False, decoded = False, endSourceFilter = False):
         storedData = []
         if len(scanResults)>0:
             for scanResult in scanResults:
-                
                 if not decoded:
                     decodedEvents = self.decodeEvents(scanResult[-1])
-                    self.logInfo(f"events found: {len(decodedEvents)}  {blocks(scanResult)}")
+                    
                 else:
                     decodedEvents = scanResult[-1]
-                newEvents = {x:y for x, y in scanResult[-1].items() if int(x)> self.fileHandler.latest}
-                
-                storedData.append([max(self.fileHandler.latest, scanResult[1][0]['fromBlock']), newEvents, min(scanResult[1][0]['toBlock'], self.fileHandler.latest)])
+                self.logInfo(f"events found: {len(decodedEvents)}  {list(decodedEvents.keys())[0]} {list(decodedEvents.keys())[-1]}")
+                blockNums = list(decodedEvents.keys())
+                i=0
+                blockNum = blockNums[i]
+                while blockNum < self.fileHandler.latest:
+                    if len(decodedEvents)>0:
+                        return
+                    del decodedEvents[blockNum]
+                    i+=1
+                    blockNum = blockNums[i]
+                    # newEvents = {x:y for x, y in decodedEvents[-1].items() if int(x)> self.fileHandler.latest}
+                if endSourceFilter:
+                    end = scanResult[1][0]['toBlock']
+                else:
+                    end = list(decodedEvents.keys())[-1]
+                    
+                storedData.append([max(self.fileHandler.latest, scanResult[1][0]['fromBlock']), decodedEvents, end])
+                self.fileHandler.process([[max(self.fileHandler.latest, scanResult[1][0]['fromBlock']), decodedEvents, end]])
             if forceSave:
                 self.fileHandler.save()
             return self.fileHandler.process(storedData)
@@ -302,12 +320,12 @@ class EventScanner(Logger):
             self.fileHandler.setup(start)
             _end = self.getCurrentBlock()
             self.logInfo(f'latest block {_end}, latest stored {end}')
-            while  self.fileHandler.latest -_end>  self.liveThreshold:
+            while  _end-self.fileHandler.latest>  self.liveThreshold:
                 _end = self.getCurrentBlock()
                 self.scanMissingBlocks(start, _end, callback = callback)
-            self.logInfo('------------------going into live mode------------------', True)
+            self.logInfo(f'------------------going into live mode, current block: {_end} latest: {self.fileHandler.latest}------------------', True)
             self.fileHandler.setup(start)
-            filterParams = self.getFilter(self.fileHandler.latest+1 , end)
+            filterParams = self.getFilter(self.fileHandler.latest+1, end)
             
             self.mw3.setup_get_logs(filterParams, self.results)
             self.mw3.mGet_logsLatest(callback = callback)
@@ -357,9 +375,10 @@ if __name__ == "__main__":
         #do stuff with the data here
         print(len(results))
         if (len(results))>0:
-            es.storeResults([results], decoded = True)
+            es.storeResults(results, decoded = True)
+        print(es.fileHandler.latest)
+        print(es.getCurrentBlock())
         
-        # print(es.getCurrentBlock())
         time.sleep(1)
 
 # <multiprocessingUtils.SharedResult object at 0x7f5c60b51120>
