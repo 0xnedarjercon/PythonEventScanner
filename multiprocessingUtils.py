@@ -1,54 +1,27 @@
-from web3 import Web3
-from multiprocessing import Queue, Process, Manager, Condition, RLock, Event
-from multiprocessing import Manager, Process, Condition, Lock
-from rpc import RPC
+
+from multiprocessing import Process
 import atexit
 import copy
 import time
 from logger import Logger
 import sys
-from configLoader import loadConfig
-from hardhat import runHardhat
 import multiprocessing.managers
-from utils import blocks, toNative
+from utils import decodeEvents
+from utils import blocks, getLastBlock, getW3
 import asyncio
 from constants import c
 
-def getLastBlock( eventData):
-    if len(eventData)>0:
-        return eventData[-1]['blockNumber']  
-    else:
-        return 0
-def getW3(cfg):
-    if type(cfg) == dict:
-        apiURL = cfg["APIURL"]
-    else:
-        apiURL = cfg
-    if apiURL[0:3] == "wss":
-        provider = Web3.WebsocketProvider(apiURL)
-        webSocket = True
-    elif apiURL[0:4] == "http":
-        provider = Web3.HTTPProvider(apiURL)
-        provider.middlewares.clear()
-        webSocket = False
-    elif apiURL[0] == "/":
-        provider = Web3.IPCProvider(apiURL)
-        webSocket = False
-    else:
-        print(f"apiUrl must start with wss, http or '/': {apiURL}")
-        sys.exit(1)
-    w3 = Web3(provider)
-    return w3, webSocket  
-t = None
+ 
 class Job():
-    def __init__(self, method, args = (), kwargs = {}, target = 0xFF, result =None):
+    def __init__(self, jobManager, method, args = (), kwargs = {}, target = 0xFF, result =None):
         self.method = method
         self.args = args
         self.kwargs = kwargs
         self.target = target
         self.result = result
+        self.jobManager = jobManager
 class Worker(Process, Logger):
-    def __init__(self, job_manager, apiUrl, id, results, lognames):
+    def __init__(self, job_manager, apiUrl, id, results, lognames,manager, hardhat = False):
         super().__init__()
         self.job_manager = job_manager
         self.w3, self.websocket = getW3(apiUrl)
@@ -57,57 +30,66 @@ class Worker(Process, Logger):
         self.results = results
         self.running = True
         self.live = False
+        self.hardhat = hardhat
+        self.manager = manager
         self.lastBlock = 0
         atexit.register(self.stop)
         Logger.setProcessName(apiUrl[8:])
         Logger.__init__(self, apiUrl[8:], lognames)
-        self.logInfo(f'initialised {apiUrl}')
+        self.logInfo(f'initialised {apiUrl} as {self.id}')
 
+    # runs continuously, checking for new jobs in the job manager
     def run(self):
         while self.running:
             if not self.runCyclic(wait = False):
                 time.sleep(0.1)
-                
+    # checks jobManager for any jobs for this worker and performs them
     def runCyclic(self, wait = True):
             job = self.job_manager.getJob(self.id, wait = wait)
             if job:
-                t.logInfo(f'got job {job[0]} {blocks(job)}')
+                self.logInfo(f'got job {job[0]} {blocks(job)}')
                 result = self.doJob(job)
                 self.job_manager.addResult(job, result)
                 return True
             else:
                 return False
-            
+
+    #goes into livescanning mode, constantly polls for new events and adds them to the shared result           
     def runLive(self, job):
-        t.logInfo('running live job')
+        self.logInfo('running live job')
         filter = job[1][0]
         lastBlock = filter['fromBlock']
         checkRange = job[1][1]
         checkRange = 20
+        decode = False
+        if 'callback' in job[2]:
+            callback = job[2]['callback']
+        else:
+            callback = None
         while self.live:
             try:
                 filter['fromBlock'] = lastBlock
                 filter['toBlock'] = filter['fromBlock']+checkRange
                 results = self.w3.eth.get_logs(filter)
                 if len(results)>0:
-                    lastBlock = max(getLastBlock(results), self.lastBlock)  
-                if len(results)>0:
+                    lastBlock = max(getLastBlock(results), self.lastBlock)
+                    if callback != None:
+                        results = callback(results)
                     self.logInfo(f'added results {lastBlock} {self.apiUrl}')
-                    self.results.addResults([['get_logs_live', (filter,), {}, self.id, results]])
-                else:
-                    self.logInfo('no results')
+                    self.results.addResults(self.manager.list(self.manager.list(['get_logs_live', (filter,), {}, self.id, results])))
             except Exception as e:
-                t.logWarn(f'error in livescan {e}')
+                self.logWarn(f'error in livescan {e}')
                 time.sleep(5)
             self.runCyclic(wait = False)
-        
+
+    #performs a requested job
     def doJob(self, job):
         method, args, kwargs, _, _ = job
         if method == 'stop':
             self.running = False
             return
         elif method == 'live':
-            t.logInfo(f'starting live {self.apiUrl}')
+            self.logInfo(f'starting live {self.apiUrl}')
             if not self.live:
                 self.live = True
                 self.runLive(job)
@@ -117,23 +99,27 @@ class Worker(Process, Logger):
             attr = self.getW3Attr(method)
             if callable(attr):
                 try:
-                    return attr(*args, **kwargs)
+                    res=  attr(*args, **kwargs)
+                    if 'callback' in kwargs:
+                        res = kwargs['callback'](res)
+                    return res
                 except Exception as e:
                     return e
 
+    #tries to get an attribute from web3, then tries web3.eth
     def getW3Attr(self, method):
         try:
-            fn = getattr(self.w3, method)
-        except AttributeError:
-            fn = getattr(self.w3.eth, method)
-        return fn
+            attr = getattr(self.w3, method)
+        except AttributeError as e:
+            attr = getattr(self.w3.eth, method)
+        return attr
 
     def stop(self):
         self.running = False
         
 class SharedResult(Logger):
-    def __init__(self, manager,configPath, web3Settings, name= 'sr'):
-        super().__init__( 'sr')
+    def __init__(self, manager,name= 'sr'):
+        super().__init__(name)
         self.manager = manager
         self.lock = manager.RLock()
         self.list = manager.list()
@@ -144,7 +130,7 @@ class SharedResult(Logger):
             
     def addResults(self, val):
         for _val in val:
-            self.logDebug(f'sharedResultAdded: {blocks(_val)}')
+            self.logInfo(f'sharedResultAdded: {blocks(_val)}, {val[0]}')
         with self.lock:
             self.list+=val
 
@@ -156,13 +142,15 @@ class SharedResult(Logger):
         with self.lock:
             if len(self.list)>0:
                 if consume:
-                    val = self.list
-                    self.list = self.manager.list()
+                    val = copy.deepcopy(self.list)
+                    while len(self.list)> 0:
+                        self.list.pop(0)
                     self.logInfo(f'result consumed {[blocks(x) for x in val]})')
                 else:
                     val = copy.deepcopy(self.list)
                 return val
             else:
+                self.logInfo('no results')
                 return []
             
             
@@ -174,8 +162,7 @@ class JobManager(Logger):
         self.jobs = self.manager.list()
         self.completed = self.manager.list()
         self.lock = self.manager.RLock()
-        global t
-        t = self
+
 
     #appends a new job into the back of the queue
     def addJob(self, method, *args, wait= True,target = None, **kwargs):
@@ -183,7 +170,7 @@ class JobManager(Logger):
                 job_item = self.manager.list([ method, args, kwargs, target, None])
                 self.jobs.append(job_item)
             if wait:
-                self.logInfo(f'waiting result {method}')
+                self.logInfo(f'waiting result {method} {target}')
                 return self.waitJob(job_item)
             else:
                 return job_item
@@ -202,12 +189,12 @@ class JobManager(Logger):
                 job_item = self.manager.list(job)
                 self.jobs.append(job_item)
             return self.jobs[-len(jobs):]
-    #inserts a new job into the front of the queue
+    #inserts a new job into the specified index of the queue
     def insertJob(self, index, method, *args, target = None, **kwargs):
             self.logInfo(f'job added {method}')
             with self.lock:
                 job_item = self.manager.list([ method, args, kwargs, target, None])
-                self.jobs.insert(0, job_item)
+                self.jobs.insert(index, job_item)
                 return job_item  
             
     #inserts a list of jobs into the front of the queue
@@ -221,14 +208,14 @@ class JobManager(Logger):
     def getJob(self, target, wait=True):
         with self.lock:
             for jobIndex, job in enumerate(self.jobs):
-                if job[-1] is None and (job[-2]==None or job[-2] == target):
+                if job[-1] is None and (job[-2]==None or job[-2] & target):
                     self.logInfo(f'job taken {blocks(self.jobs[jobIndex])}')
                     return self.jobs.pop(jobIndex)                   
         while wait:
             time.sleep(c.WAIT)
             with self.lock:
                 for jobIndex, job in enumerate(self.jobs):
-                    if job[-1] is None and (job[-2]==None or job[-2] == target):
+                    if job[-1] is None and (job[-2]==None or job[-2] &target):
                         return self.jobs.pop(jobIndex)
     #removes all jobs matching the methods and targets specified
     def popAllJobs(self, methods, targets):

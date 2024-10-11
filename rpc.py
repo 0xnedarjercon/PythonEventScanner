@@ -51,42 +51,23 @@ def getEventParameters(param):
 
 class RPC(Logger):
 
-    def __init__(self, apiUrl, rpcSettings, jobManager, id, configPath):
+    def __init__(self, apiUrl, rpcSettings, jobManager, id):
         self.apiUrl = apiUrl
         super().__init__('rpc')
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
-        self.pollInterval = rpcSettings["POLLINTERVAL"]
         self.jobs = []
         self.failCount = 0
-        self.activeStates = rpcSettings["ACTIVESTATES"]
         self.jobManager = jobManager
         self.id = id
         self.lastBlock = 0
         self.lastTime = 0
         Logger.setProcessName(apiUrl)
 
-    def checkJobs(self, handleErrors = True):
-        succsessfulJobs=[]
-        
-        completedJobs = self.jobManager.checkJobs(self.jobs)
-        for job in completedJobs:
-            if isinstance(job[-1], BaseException):
-                if handleErrors:
-                    self.logInfo(f'error with job {blocks(job)} {job[-1]} {self.apiUrl}')
-                    self.handleError(job)
-                else:
-                    self.logInfo('not handling errors')
-            else:
-                self.logInfo(f'successful job: {blocks(job)}')
-                succsessfulJobs.append(job)
-        if len(succsessfulJobs)>0:
-            lastJob = succsessfulJobs[-1]
-            self.throttle(lastJob[-1], lastJob[1][0]['toBlock'] - lastJob[1][0]['fromBlock'])
-        return succsessfulJobs
 
-                
+
+    #takes a eth.get_logs job based on its scan parameters and the remaining range to be scanned
     def takeJob(self, remaining, filter, consume = True):
             startBlock = remaining[0]
             endBlock = min(remaining[0] + self.currentChunkSize, remaining[1])
@@ -98,52 +79,38 @@ class RPC(Logger):
             rpcFilter['toBlock'] = endBlock
             self.addGetLogsJob(rpcFilter)
  
-            
+    #wraps a filter into a get_logs job and adds it to the job manager
     def addGetLogsJob(self, rpcFilter):
             self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, target = self.id, wait=False))
-
-
-    #---------------------event Decoding functions----------------------------------
-    def decodeEvents(self, events):
-        decodedEvents = []
-        if self.scanMode == "ANYEVENT":
-            for event in events:
-                evt = get_event_data(
-                    self.w3.codec,
-                    self.contracts[event["address"]][event["topics"][0].hex()],
-                    event,
-                )
-                decodedEvents.append(evt)
-        elif self.scanMode == "ANYCONTRACT":
-            for event in events:
-                eventLookup = self.abiLookups[event["topics"][0].hex()]
-                numTopics = len(event["topics"])
-                if numTopics in eventLookup:
-                    evt = get_event_data(
-                        self.w3.codec,
-                        self.abiLookups[event["topics"][0].hex()][numTopics],
-                        event,
-                    )
-                    decodedEvents.append(evt)
-        return self.getEventData(decodedEvents)
     
-    def getEventData(self, events):
-        decodedEvents = {}
-        for param in events:
-            blockNumber, txHash, address, index = getEventParameters(param)
-            if blockNumber not in decodedEvents:
-                decodedEvents[blockNumber] = {}
-            if txHash not in decodedEvents[blockNumber]:
-                decodedEvents[blockNumber][txHash] = {}
-            if address not in decodedEvents[blockNumber][txHash]:
-                decodedEvents[blockNumber][txHash][address] = {}
-            decodedEvents[blockNumber][txHash][address][index] = {}
-            for eventName, eventParam in param["args"].items():
-                decodedEvents[blockNumber][txHash][address][index][
-                    eventName
-                ] = eventParam
-        return decodedEvents
+    #checks for any completed jobs from the worker and returns them, handles rpc errors
+    def checkJobs(self, handleErrors = True):
+        succsessfulJobs=[]
+        completedJobs = self.jobManager.checkJobs(self.jobs)
+        for job in completedJobs:
+            if isinstance(job[-1], BaseException):
+                if handleErrors:
+                    self.logInfo(f'error with job {blocks(job)} {job[-1]} {self.apiUrl}')
+                    self.handleError(job)
+            else:
+                self.logInfo(f'successful job: {blocks(job)}')
+                succsessfulJobs.append(job)
+        if len(succsessfulJobs)>0:
+            lastJob = succsessfulJobs[-1]
+            self.throttle(lastJob[-1], lastJob[1][0]['toBlock'] - lastJob[1][0]['fromBlock'])
+        return succsessfulJobs
 
+    #removes all jobs matching the method for this rpc from both local list and jobmanager, returns the removed jobs 
+    def popJobs(self, methods):
+        removedJobs = self.jobManager.popAllJobs(methods, self.id)
+        jobsLength = len(self.jobs)
+        for i in range(jobsLength):
+            j = jobsLength-i-1
+            if self.jobs[j] in removedJobs:
+                self.jobs.pop(j)
+        return removedJobs
+
+    #throttles the block scan range depending on the configured target number of events
     def throttle(self, events, blockRange):
         if len(events) > 0:
             ratio = self.eventsTarget / (len(events))
@@ -153,7 +120,8 @@ class RPC(Logger):
             self.logInfo(
                     f"processed events: {len(events)}, ({blockRange}) blocks, throttled to {self.currentChunkSize}"
                 )
-    #-----------------------error handling------------------------------------
+    #-----------------------rpc error handling------------------------------------
+    
     def handleRangeTooLargeError(self, failingJob):
         try:
             for word in failingJob[-1].args[0]["message"].split(' '):
@@ -235,14 +203,15 @@ class RPC(Logger):
                     f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
                     True,
                 )
-
+    # reduces the scan range by a specified factor, 
+    # removes all jobs in the jobmanager, splits them based on the new scan range and adds them back
     def splitJob(self,numJobs, failingJob ,chunkSize =None, reduceChunkSize=True):
         self.logInfo(f'spitting jobs due to {blocks(failingJob)}')
         if type(chunkSize) !=(int):
             chunkSize = math.ceil((failingJob[1][0]['toBlock'] - failingJob[1][0]['fromBlock']) / numJobs)
         if reduceChunkSize:
             self.currentChunkSize = max(chunkSize, 1)
-        removedJobs = self.removeJobs(['get_logs'])
+        removedJobs = self.popJobs(['get_logs'])
         removedJobs.insert(0, failingJob)
         newJobs = []
         for job in (removedJobs):
@@ -259,13 +228,5 @@ class RPC(Logger):
         self.jobs += self.jobManager.addJobs(newJobs)
 
 
-           
-    def removeJobs(self, methods):
-        removedJobs = self.jobManager.popAllJobs(['get_logs'], self.id)
-        jobsLength = len(self.jobs)
-        for i in range(jobsLength):
-            j = jobsLength-i-1
-            if self.jobs[j] in removedJobs:
-                self.jobs.pop(j)
-        return removedJobs
+
 

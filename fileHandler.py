@@ -13,7 +13,7 @@ class FileHandler(Logger):
         fileSettings,
         configPath,name
     ):
-        super().__init__(['default'])
+        super().__init__('fh')
         filePath = configPath + "data/"
         os.makedirs(filePath, exist_ok=True)
         self.currentFile = None

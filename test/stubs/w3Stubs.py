@@ -5,7 +5,6 @@ import time
 
 from rpc import RPC
 from eventScanner import EventScanner, InvalidConfigException
-from scannerRpcInterface import initInterfaces
 import multiprocessing
 import pickle
 import asyncio

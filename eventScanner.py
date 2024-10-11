@@ -7,13 +7,12 @@ import os
 from logger import Logger
 import multiprocessing
 from configLoader import loadConfig
-import atexit
 from MultiWeb3 import MultiWeb3
 from utils import blocks, toNative
 directory = os.path.dirname(os.path.abspath(__file__))
-from rpc import RPC
 from fileHandler import FileHandler
-
+from functools import partial
+from utils import decodeEvents
 
 def scan():
     es = EventScanner()
@@ -66,25 +65,23 @@ class EventScanner(Logger):
         sharedResult = None,
         mw3 = None
     ):
-        # Logger.setProcessName('scanner')
-        fileSettings, scanSettings, rpcSettings, rpcInterfaceSettings, hreSettings, web3Settings = (
+        fileSettings, scanSettings, _, _ = (
             loadConfig(_configPath + "/config.json")
     )
         self.live = False
         self.initMw3(sharedResult, jobManager, mw3, manager, configPath, scanSettings)
-        atexit.register(self.teardown)
         self.configPath = configPath
         Logger.setProcessName('scanner')
-        self.loadSettings(scanSettings, rpcSettings, rpcInterfaceSettings)
+        self.loadSettings(scanSettings)
         super().__init__('es')
         self.fileHandler = FileHandler(
             fileSettings,
             configPath, 'fh'
         )
         self.showProgress = showprogress
-        self.validateSettings()
         self.codec = self.mw3.codec
-        
+    #initialised a multiweb3 instance if one is not passed to it as well as a cross-process sharable results array
+    #and job manager
     def initMw3(self, sharedResult, jobManager, mw3, manager, configPath, scanSettings):
         if mw3 == None:
             if manager == None:
@@ -92,11 +89,11 @@ class EventScanner(Logger):
             else:
                 self.manager = manager
             if sharedResult == None:
-                self.results = MultiWeb3.createSharedResult(self.manager, configPath,scanSettings, name = 'sr' )
+                self.results = MultiWeb3.createSharedResult(self.manager)
             else:
                 self.results = sharedResult
             if jobManager == None:
-                self.jobManager = MultiWeb3.createJobManager(self.manager, configPath,scanSettings, 'jm')
+                self.jobManager = MultiWeb3.createJobManager(self.manager)
             else:
                 self.jobManger = jobManager  
             self.mw3 = MultiWeb3(web3Settings, rpcSettings, manager = self.manager, configPath=configPath, results = self.results, jobManager = self.jobManager)
@@ -104,20 +101,23 @@ class EventScanner(Logger):
             self.mw3 = mw3
             self.manager = mw3.manager
             self.results = mw3.results
-            self.jobManager = mw3.jobManager
-            
-            
-            
-    def validateSettings(self):
-        if len(self.abiLookups) == 0 and self.scanMode == "ANYCONTRACT":
-            raise InvalidConfigException(
-                "invalid configuration, unable to find any abis"
-            )
-        if len(self.contracts) == 0 and self.scanMode == "ANYEVENT":
-            raise InvalidConfigException(
-                "invalid configuration, unable to find any contracts"
-            )
-            
+            self.jobManager = mw3.MultiWeb3
+        #stores relevent settings from config file
+    def loadSettings(self, scanSettings):
+        self.scanMode = scanSettings["MODE"]
+        self.events = scanSettings["EVENTS"]
+        self.loadAbis()
+        self.processContracts(scanSettings["CONTRACTS"])
+        if scanSettings["STARTBLOCK"] == "current":
+            self.startBlock = self.getCurrentBlock()
+        else:
+            self.startBlock = scanSettings["STARTBLOCK"]
+        if scanSettings["ENDBLOCK"] == "current":
+            self.endBlock = self.getCurrentBlock()
+        else:
+            self.endBlock = scanSettings["ENDBLOCK"]
+        self.liveThreshold = scanSettings["LIVETHRESHOLD"]
+    #breaks down event data into a usable dict
     def getEventData(self, events):
         decodedEvents = {}
         for param in events:
@@ -134,6 +134,7 @@ class EventScanner(Logger):
                     eventName
                 ] = eventParam
         return decodedEvents
+    #decodes events based on scansettings
     def decodeEvents(self, events):
         decodedEvents = []
         if self.scanMode == "ANYEVENT":
@@ -156,23 +157,8 @@ class EventScanner(Logger):
                     )
                     decodedEvents.append(evt)
         return self.getEventData(decodedEvents)
-    
-    def loadSettings(self, scanSettings, rpcSettings, rpcInterfaceSettings):
-        self.scanMode = scanSettings["MODE"]
-        self.events = scanSettings["EVENTS"]
-        self.loadAbis()
-        self.processContracts(scanSettings["CONTRACTS"])
-        # self.initRpcs(rpcSettings, scanSettings, rpcInterfaceSettings)
-        if scanSettings["STARTBLOCK"] == "current":
-            self.startBlock = self.getCurrentBlock()
-        else:
-            self.startBlock = scanSettings["STARTBLOCK"]
-        if scanSettings["ENDBLOCK"] == "current":
-            self.endBlock = self.getCurrentBlock()
-        else:
-            self.endBlock = scanSettings["ENDBLOCK"]
-        self.liveThreshold = scanSettings["LIVETHRESHOLD"]
 
+    # processes the passed contracts and stores the event signiatures
     def processContracts(self, contracts):
         self.contracts = {}
         self.abiLookups = {}
@@ -185,7 +171,7 @@ class EventScanner(Logger):
                     self.contracts[checksumAddress][eventSig] = entry
                     if entry["name"] in self.events:
                         self.abiLookups[eventSig] = {topicCount: entry}
-
+    #gets the lates block available from rpc
     def getCurrentBlock(self):
         return self.mw3.eth.get_block_number()
 
@@ -195,21 +181,69 @@ class EventScanner(Logger):
         for file in files:
             if file.endswith(".json"):
                 self.abis[file[:-5]] = json.load(open(self.configPath + "ABIs/" + file))
-
+    #returns the last block stored by the filehandler
     def getLastStoredBlock(self):
         return self.fileHandler.latest
-
+    #saves the currently available data
     def saveState(self):
         self.fileHandler.save()
-
+    #graceful exit on keyboard interrupt
     def interrupt(self):
         self.logInfo("keyboard interrupt")
-        self.teardown()
+        self.saveState()
+        
 
-    def teardown(self):
+    #generates a filter for get_logs based on what is configured
+    def getFilter(self, start, end):
+        if self.scanMode == "ANYEVENT":
+            return {
+                "fromBlock": start,
+                "toBlock": end,
+                "topics": [],
+                "address": list(self.contracts.keys()),
+            }
+        elif self.scanMode == "ANYCONTRACT":
+            return {
+                "fromBlock": start,
+                "toBlock": end,
+                "topics": [list(self.abiLookups.keys())],
+                "address": [],
+            }
+    #scans a fixed range of blocks
+    def scanFixedEnd(self, start, endBlock, callback = None):
+        filterParams = self.getFilter(start, endBlock)
+        cyclicGetLogs = self.mw3.setup_get_logs(filterParams, callback = callback).cyclic
+        startTime = time.time()
+        totalBlocks = endBlock - start
+        self.logInfo(
+            f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
+            True,
+        )
+        with tqdm(total=endBlock - start, disable=self.showProgress) as progress_bar:
+            while self.fileHandler.latest < endBlock:
+                cyclicGetLogs()
+                scanResults = self.mw3.results.get()
+                storedData = []
+                if len(scanResults)>0:
+                    numBlocks = self.storeResults(scanResults)
+                    self.updateProgress(
+                        progress_bar,
+                        startTime,
+                        start,
+                        totalBlocks,
+                        numBlocks,
+                    )
+        self.logInfo(
+            f"Completed: Scanned blocks {start}-{self.endBlock} in {time.time()-startTime}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))}",
+            True,
+        )
+        self.logInfo(
+            f"average {(endBlock-start)/(time.time()-startTime)} blocks per second",
+            True,
+        )
         self.fileHandler.save()
-
-
+        return endBlock
+        #updates progress bar for fixed scan
     def updateProgress(
         self,
         progress_bar,
@@ -228,70 +262,27 @@ class EventScanner(Logger):
         )
         progress_bar.update(numBlocks)
         
-    def getFilter(self, start, end):
-        if self.scanMode == "ANYEVENT":
-            return {
-                "fromBlock": start,
-                "toBlock": end,
-                "topics": [],
-                "address": list(self.contracts.keys()),
-            }
-        elif self.scanMode == "ANYCONTRACT":
-            return {
-                "fromBlock": start,
-                "toBlock": end,
-                "topics": [list(self.abiLookups.keys())],
-                "address": [],
-            }
-    #scans a fixed range of blocks
-    def scanFixedEnd(self, start, endBlock):
-        filterParams = self.getFilter(start, endBlock)
-        cyclicGetLogs = self.mw3.setup_get_logs(filterParams).cyclic
-        startTime = time.time()
-        totalBlocks = endBlock - start
-        self.logInfo(
-            f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
-            True,
-        )
-        with tqdm(total=endBlock - start, disable=self.showProgress) as progress_bar:
-            while self.fileHandler.latest < endBlock:
-                cyclicGetLogs()
-                scanResults = self.mw3.results.get()
-                storedData = []
-                if len(scanResults)>0:
-                    numBlocks = self.storeData(scanResults)
-                    self.updateProgress(
-                        progress_bar,
-                        startTime,
-                        start,
-                        totalBlocks,
-                        numBlocks,
-                    )
-        self.logInfo(
-            f"Completed: Scanned blocks {start}-{self.endBlock} in {time.time()-startTime}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))}",
-            True,
-        )
-        self.logInfo(
-            f"average {(endBlock-start)/(time.time()-startTime)} blocks per second",
-            True,
-        )
-        self.fileHandler.save()
-        return endBlock
-    
-    def storeData(self, scanResults, save = False):
+    #stores get_logs results into the file handler
+    def storeResults(self, scanResults, forceSave = False, decoded = False):
         storedData = []
         if len(scanResults)>0:
             for scanResult in scanResults:
-                decodedEvents = self.decodeEvents(scanResult[-1])
-                self.logInfo(f"events found: {len(decodedEvents)}  {blocks(scanResult)}")
-                storedData.append([scanResult[1][0]['fromBlock'], decodedEvents, scanResult[1][0]['toBlock']])
-            if save:
+                
+                if not decoded:
+                    decodedEvents = self.decodeEvents(scanResult[-1])
+                    self.logInfo(f"events found: {len(decodedEvents)}  {blocks(scanResult)}")
+                else:
+                    decodedEvents = scanResult[-1]
+                newEvents = {x:y for x, y in scanResult[-1].items() if int(x)> self.fileHandler.latest}
+                
+                storedData.append([max(self.fileHandler.latest, scanResult[1][0]['fromBlock']), newEvents, min(scanResult[1][0]['toBlock'], self.fileHandler.latest)])
+            if forceSave:
                 self.fileHandler.save()
             return self.fileHandler.process(storedData)
         else:
             return 0
-    #scans the specified range of blocks, thne transitions to live mode, polling for latest blocks
-    def scanBlocks(self, start=None, end=None, resultsOut=None, rpcs = None, continuous = False):
+    #scans from a specified block, then transitions to live mode, polling for latest blocks
+    def scanBlocks(self, start=None, end=None, resultsOut=None, rpcs = None, decode = True):
         if start is None:
             start = self.startBlock
         if end is None:
@@ -300,29 +291,36 @@ class EventScanner(Logger):
             resultsOut = self.mw3.results
         if end == "current":
             end = self.getCurrentBlock()
+        if decode:
+                callback = partial(decodeEvents, scanMode = self.scanMode, codec = self.codec, contracts = self.contracts, abiLookups = self.abiLookups)
+        else:
+            callback = None
         if isinstance(end, int):
-            self.scanMissingBlocks(start, end)
+            self.scanMissingBlocks(start, end, callback = callback)
             return
         else:
+            self.fileHandler.setup(start)
             _end = self.getCurrentBlock()
-            while _end- self.fileHandler.latest <=  self.liveThreshold:
+            self.logInfo(f'latest block {_end}, latest stored {end}')
+            while  self.fileHandler.latest -_end>  self.liveThreshold:
                 _end = self.getCurrentBlock()
-                self.scanMissingBlocks(start, _end)
+                self.scanMissingBlocks(start, _end, callback = callback)
             self.logInfo('------------------going into live mode------------------', True)
             self.fileHandler.setup(start)
             filterParams = self.getFilter(self.fileHandler.latest+1 , end)
-            self.mw3.setup_get_logs(filterParams)
-            self.mw3.mGet_logsLatest()
+            
+            self.mw3.setup_get_logs(filterParams, self.results)
+            self.mw3.mGet_logsLatest(callback = callback)
             self.live = True
 
 
-
-    def scanMissingBlocks(self, start, end):
+    #triggers fixed scan for any gaps in the stored data for the range provided
+    def scanMissingBlocks(self, start, end, callback = None):
         missingBlocks = self.fileHandler.checkMissing(start, end)
         self.logInfo(f"missing blocks: {missingBlocks}")
         for missingBlock in missingBlocks:
             self.fileHandler.setup(missingBlock[0])
-            self.scanFixedEnd(missingBlock[0], missingBlock[1])
+            self.scanFixedEnd(missingBlock[0], missingBlock[1], callback = callback)
         self.fileHandler.setup(end)
 
     def getEvents(self, start, end, results=[]):
@@ -345,18 +343,24 @@ if __name__ == "__main__":
     _configPath = f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
     with open(_configPath + "/config.json") as f:
         cfg = json.load(f)
-    fileSettings, scanSettings, rpcSettings, rpcInterfaceSettings, hreSettings, web3Settings = (
+    fileSettings, scanSettings, rpcSettings,  web3Settings = (
         loadConfig(cfg)
     )
     es = EventScanner(
         _configPath,
     )
-    es.scanBlocks()
+    es.scanBlocks(decode = True)
     while not es.live:
         time.sleep(1)
     while es.live:
         results = es.results.get()
         #do stuff with the data here
-        es.storeData(results)
-        print(results)
+        print(len(results))
+        if (len(results))>0:
+            es.storeResults([results], decoded = True)
+        
+        # print(es.getCurrentBlock())
         time.sleep(1)
+
+# <multiprocessingUtils.SharedResult object at 0x7f5c60b51120>
+# <multiprocessingUtils.SharedResult object at 0x7f5c60b51120>
