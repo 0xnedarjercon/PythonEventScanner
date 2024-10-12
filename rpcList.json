@@ -1,0 +1,37 @@
+{
+    "https://base.gateway.tenderly.co": {
+        "MAXCHUNKSIZE": 8000,
+        "STARTCHUNKSIZE": 100,
+        "EVENTSTARGET": 2000,
+        "LOGNAMES": [
+            "default",
+            "tenderly"
+        ]
+    },
+    "http://127.0.0.1:8545/": {
+        "MAXCHUNKSIZE": 8000,
+        "STARTCHUNKSIZE": 1000,
+        "EVENTSTARGET": 2000,
+        "LOGNAMES": [
+            "blockpi",
+            "default"
+        ],
+        "ACTIVESTATES": [
+            1,
+            2
+        ]
+    },
+    "https://1rpc.io/base": {
+        "MAXCHUNKSIZE": 8000,
+        "STARTCHUNKSIZE": 100,
+        "EVENTSTARGET": 2000,
+        "LOGNAMES": [
+            "default",
+            "1rpc"
+        ],
+        "ACTIVESTATES": [
+            1,
+            2
+        ]
+    }
+}

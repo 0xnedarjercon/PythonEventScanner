@@ -12,6 +12,7 @@ def _locked_emit(emit, lock):
 
     return wrapper
 
+os.makedirs(f"{configPath}/logs", exist_ok=True)
 class Logger:
     loggers = {}
     fileHandlers = {}

@@ -11,7 +11,7 @@ from hardhat import runHardhat
 import copy
 from multiprocessing.managers import ListProxy, DictProxy
 from utils import blocks, toNative
-from constants import c
+
     
 def getW3(cfg):
     apiURL = cfg["APIURL"]

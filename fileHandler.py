@@ -167,7 +167,7 @@ class FileHandler(Logger):
         self.logDebug(f"missing files: {missing}")
         return missing
 
-    def getEvents(self, start, end, results):
+    def getEvents(self, start, end, results = {}):
         files = self.getFiles()
         for file in files:
             if file[1] >= start:
@@ -178,5 +178,5 @@ class FileHandler(Logger):
                     data = {key:value for key, value in data.items() if int(key) <= end}
                     results.append(data)
                     return results
-                results.append(data)
+                results.update(data)
         return results
