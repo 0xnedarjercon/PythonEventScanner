@@ -12,7 +12,6 @@ from utils import blocks, toNative
 
 directory = os.path.dirname(os.path.abspath(__file__))
 from fileHandler import FileHandler
-from functools import partial
 from utils import decodeEvents
 
 
@@ -35,7 +34,7 @@ def scanLive():
 def processEvents(event):
     eventName = event["name"]
     inputTypes = [input_abi["type"] for input_abi in event["inputs"]]
-    eventSig = Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
+    eventSig = '0x'+Web3.keccak(text=f"{eventName}({','.join(inputTypes)})").hex()
     topicCount = sum(1 for inp in event["inputs"] if inp["indexed"]) + 1
     return eventSig, topicCount
 
@@ -80,6 +79,7 @@ class EventScanner(Logger):
         self.fileHandler = FileHandler(fileSettings, configPath, "fh")
         self.showProgress = showprogress
         self.codec = self.mw3.codec
+        self.decodeCallback = (decodeEvents, {"scanMode":self.scanMode, "codec":None, "contracts":self.contracts, "abiLookups":self.abiLookups, "w3":None})
 
     # initialised a multiweb3 instance if one is not passed to it as well as a cross-process sharable results array
     # and job manager
@@ -148,28 +148,28 @@ class EventScanner(Logger):
         return decodedEvents
 
     # decodes events based on scansettings
-    def decodeEvents(self, events):
-        decodedEvents = []
-        if self.scanMode == "ANYEVENT":
-            for event in events:
-                evt = get_event_data(
-                    self.codec,
-                    self.contracts[event["address"]][event["topics"][0].hex()],
-                    event,
-                )
-                decodedEvents.append(evt)
-        elif self.scanMode == "ANYCONTRACT":
-            for event in events:
-                eventLookup = self.abiLookups[event["topics"][0].hex()]
-                numTopics = len(event["topics"])
-                if numTopics in eventLookup:
-                    evt = get_event_data(
-                        self.codec,
-                        self.abiLookups[event["topics"][0].hex()][numTopics],
-                        event,
-                    )
-                    decodedEvents.append(evt)
-        return self.getEventData(decodedEvents)
+    # def decodeEvents(self, events):
+    #     decodedEvents = []
+    #     if self.scanMode == "ANYEVENT":
+    #         for event in events:
+    #             evt = get_event_data(
+    #                 self.codec,
+    #                 self.contracts[event["address"]][event["topics"][0].hex()],
+    #                 event,
+    #             )
+    #             decodedEvents.append(evt)
+    #     elif self.scanMode == "ANYCONTRACT":
+    #         for event in events:
+    #             eventLookup = self.abiLookups['0x'+event["topics"][0].hex()]
+    #             numTopics = len(event["topics"])
+    #             if numTopics in eventLookup:
+    #                 evt = get_event_data(
+    #                     self.codec,
+    #                     self.abiLookups['0x'+event["topics"][0].hex()][numTopics],
+    #                     event,
+    #                 )
+    #                 decodedEvents.append(evt)
+    #     return self.getEventData(decodedEvents)
 
     # processes the passed contracts and stores the event signiatures
     def processContracts(self, contracts):
@@ -233,6 +233,9 @@ class EventScanner(Logger):
 
     # scans a fixed range of blocks
     def scanFixedEnd(self, start, endBlock, callback=None):
+        if callback == None:
+            callback = self.decodeCallback
+        results = []
         filterParams = self.getFilter(start, endBlock)
         if callback != None:
             decoded = True
@@ -240,27 +243,21 @@ class EventScanner(Logger):
             decoded = False
         cyclicGetLogs = self.mw3.setup_get_logs(filterParams, callback=callback).cyclic
         startTime = time.time()
-        totalBlocks = endBlock - start
         self.logInfo(
             f"starting fixed scan at {time.asctime(time.localtime(startTime))}, scanning {start} to {endBlock}",
             True,
         )
-        with tqdm(total=endBlock - start, disable=self.showProgress) as progress_bar:
-            while self.fileHandler.latest < endBlock:
-                cyclicGetLogs(callback=callback)
-                scanResults = self.mw3.results.get()
-                storedData = []
-                if len(scanResults) > 0:
-                    numBlocks = self.storeResults(
+
+        while self.fileHandler.latest < endBlock:
+            cyclicGetLogs(callback=callback)
+            scanResults = self.mw3.results.get()
+            if len(scanResults) > 0:
+                results.append(scanResults)
+                if len(scanResults)>0:
+                    self.storeResults(
                         scanResults, decoded=decoded, endSourceFilter=True
                     )
-                    # self.updateProgress(
-                    #     progress_bar,
-                    #     startTime,
-                    #     start,
-                    #     totalBlocks,
-                    #     numBlocks,
-                    # )
+
         self.logInfo(
             f"Completed: Scanned blocks {start}-{self.endBlock} in {time.time()-startTime}s from {time.asctime(time.localtime(startTime))} to {time.asctime(time.localtime(time.time()))}",
             True,
@@ -270,7 +267,7 @@ class EventScanner(Logger):
             True,
         )
         self.fileHandler.save()
-        return endBlock
+        return results
         # updates progress bar for fixed scan
 
     def updateProgress(
@@ -291,7 +288,7 @@ class EventScanner(Logger):
         )
         progress_bar.update(numBlocks)
 
-    # stores get_logs results into the file handler
+    # stores get_logs results into the file handler scanResults is a list of listProxy jobs
     def storeResults(
         self, scanResults, forceSave=False, decoded=False, endSourceFilter=False
     ):
@@ -299,8 +296,8 @@ class EventScanner(Logger):
         if len(scanResults) > 0:
             for scanResult in scanResults:
                 if not decoded:
-                    decodedEvents = self.decodeEvents(scanResult[-1])
-
+                    #TODO fix this, doesnt have a native W3
+                    decodedEvents = decodeEvents(scanResult[-1], **{"scanMode":self.scanMode, "codec":self.codec, "contracts":self.contracts, "abiLookups":self.abiLookups, "w3":None})
                 else:
                     decodedEvents = scanResult[-1]
                 self.logInfo(
@@ -310,7 +307,7 @@ class EventScanner(Logger):
                 i = 0
                 blockNum = blockNums[i]
                 while blockNum < self.fileHandler.latest:
-                    if len(decodedEvents) > 0:
+                    if len(decodedEvents) == 0:
                         return
                     del decodedEvents[blockNum]
                     i += 1
@@ -328,15 +325,15 @@ class EventScanner(Logger):
                         end,
                     ]
                 )
-                self.fileHandler.process(
-                    [
-                        [
-                            max(self.fileHandler.latest, scanResult[1][0]["fromBlock"]),
-                            decodedEvents,
-                            end,
-                        ]
-                    ]
-                )
+                # self.fileHandler.process(
+                #     [
+                #         [
+                #             max(self.fileHandler.latest, scanResult[1][0]["fromBlock"]),
+                #             decodedEvents,
+                #             end,
+                #         ]
+                #     ]
+                # )
             if forceSave:
                 self.fileHandler.save()
             return self.fileHandler.process(storedData)
@@ -345,6 +342,7 @@ class EventScanner(Logger):
 
     # scans from a specified block, then transitions to live mode, polling for latest blocks
     def scanBlocks(self, start=None, end=None, resultsOut=None, rpcs=None, decode=True):
+        results = []
         if start is None:
             start = self.startBlock
         if end is None:
@@ -354,46 +352,43 @@ class EventScanner(Logger):
         if end == "current":
             end = self.getCurrentBlock()
         if decode:
-            callback = partial(
-                decodeEvents,
-                scanMode=self.scanMode,
-                codec=self.codec,
-                contracts=self.contracts,
-                abiLookups=self.abiLookups,
-            )
+            callback = (decodeEvents, {"scanMode":self.scanMode, "codec":None, "contracts":self.contracts, "abiLookups":self.abiLookups, "w3":None})
         else:
             callback = None
         if isinstance(end, int):
-            self.scanMissingBlocks(start, end, callback=callback)
-            return
+            results.append(self.scanMissingBlocks(start, end, callback=callback))
+            return results
         else:
             self.fileHandler.setup(start)
             _end = self.getCurrentBlock()
             self.logInfo(f"latest block {_end}, latest stored {end}")
             while _end - self.fileHandler.latest > self.liveThreshold:
                 _end = self.getCurrentBlock()
-                self.scanMissingBlocks(start, _end, callback=callback)
+                results.append(self.scanMissingBlocks(start, _end, callback=callback))
             self.logInfo(
                 f"------------------going into live mode, current block: {_end} latest: {self.fileHandler.latest}------------------",
                 True,
             )
             self.fileHandler.setup(start)
             filterParams = self.getFilter(self.fileHandler.latest + 1, end)
-
             self.mw3.setup_get_logs(filterParams, self.results)
             self.mw3.mGet_logsLatest(callback=callback)
             self.live = True
+            return results
 
+        
     # triggers fixed scan for any gaps in the stored data for the range provided
     def scanMissingBlocks(self, start, end, callback=None):
+        results = []
         missingBlocks = self.fileHandler.checkMissing(start, end)
         currentBlock = self.getCurrentBlock()
         self.logInfo(f"missing blocks: {missingBlocks}")
         for missingBlock in missingBlocks:
             assert missingBlock[0] <= currentBlock, 'startBlock not yet available'
             self.fileHandler.setup(missingBlock[0])
-            self.scanFixedEnd(missingBlock[0], missingBlock[1], callback=callback)
+            results.append(self.scanFixedEnd(missingBlock[0], missingBlock[1], callback=callback))
         self.fileHandler.setup(end)
+        return results
 
     def getEvents(self, start, end, results={}):
         self.scanMissingBlocks(start, end)
@@ -415,17 +410,18 @@ if __name__ == "__main__":
     _configPath = f"{os.path.dirname(os.path.abspath(__file__))}/settings/{folderPath}/"
     with open(_configPath + "/config.json") as f:
         cfg = json.load(f)
-    fileSettings, scanSettings, rpcSettings, web3Settings = loadConfig(cfg)
+    # fileSettings, scanSettings, rpcSettings, web3Settings = loadConfig(cfg)
     es = EventScanner(
         _configPath,
     )
-    es.scanBlocks(decode=True)
+    newData = es.scanBlocks(decode=True)
     while not es.live:
         time.sleep(1)
     while es.live:
         results = es.results.get()
         # do stuff with the data here
         print(len(results))
+        es.logInfo(f'results gotten: {results}')
         if (len(results)) > 0:
             es.storeResults(results, decoded=True, forceSave=True)
         print(es.fileHandler.latest)

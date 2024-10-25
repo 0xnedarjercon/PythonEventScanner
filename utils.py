@@ -17,7 +17,7 @@ def blocks(filter):
     except:
         return 'not get_logs'
     
-def getW3(cfg):
+def getW3(cfg, request_kwargs={'timeout': 10}):
     if type(cfg) == dict:
         apiURL = cfg["APIURL"]
     else:
@@ -26,8 +26,8 @@ def getW3(cfg):
         provider = Web3.WebsocketProvider(apiURL)
         webSocket = True
     elif apiURL[0:4] == "http":
-        provider = Web3.HTTPProvider(apiURL)
-        provider.middlewares.clear()
+        provider = Web3.HTTPProvider(apiURL, request_kwargs)
+        # provider.middleware.clear()
         webSocket = False
     elif apiURL[0] == "/":
         provider = Web3.IPCProvider(apiURL)
@@ -57,10 +57,11 @@ def getLastBlock( eventData):
         return 0  
 # formats decoded event data to a nested dictionary of 
 # blockNo. txHash, address, index, eventName: eventParams
-def getEventData(events):
+def getEventData(events, w3):
     decodedEvents = {}
     for param in events:
         blockNumber, txHash, address, index = getEventParameters(param)
+        address = w3.to_checksum_address(address)
         if blockNumber not in decodedEvents:
             decodedEvents[blockNumber] = {}
         if txHash not in decodedEvents[blockNumber]:
@@ -76,7 +77,7 @@ def getEventData(events):
     
 # decodes raw event data and returns a nested dictionary of 
 # blockNo. txHash, address, index, eventName: eventParams
-def decodeEvents(events, scanMode, codec, contracts, abiLookups):
+def decodeEvents(events, scanMode, codec, contracts, abiLookups, w3):
     decodedEvents = []
     if scanMode == "ANYEVENT":
         for event in events:
@@ -88,16 +89,16 @@ def decodeEvents(events, scanMode, codec, contracts, abiLookups):
             decodedEvents.append(evt)
     elif scanMode == "ANYCONTRACT":
         for event in events:
-            eventLookup = abiLookups[event["topics"][0].hex()]
+            eventLookup = abiLookups['0x'+event["topics"][0].hex()]
             numTopics = len(event["topics"])
             if numTopics in eventLookup:
                 evt = get_event_data(
                     codec,
-                    abiLookups[event["topics"][0].hex()][numTopics],
+                    abiLookups['0x'+event["topics"][0].hex()][numTopics],
                     event,
                 )
                 decodedEvents.append(evt)
-    return getEventData(decodedEvents)
+    return getEventData(decodedEvents, w3)
 
 def getEventParameters(param):
     if "event" in param:

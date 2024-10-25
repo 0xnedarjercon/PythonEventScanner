@@ -9,8 +9,8 @@ from utils import getLastBlock
 from logger import Logger
 from configLoader import loadConfig
 from hardhat import runHardhat
-from multiprocessingUtils import Worker, SharedResult, JobManager, ContinuousWrapper     
-
+from multiprocessingUtils import Worker, SharedResult, JobManager, ContinuousWrapper  , getW3   
+import asyncio
 class MultiWeb3(Logger):
     @classmethod
     def createSharedResult(cls, manager, path='', config='', name = ''):
@@ -49,20 +49,20 @@ class MultiWeb3(Logger):
         self.usedRpcs = self.rpcs
         self.rpcTargets = 0
         for apiUrl, rpcSetting in rpcSettings.items():
-            self.addRpc(apiUrl, rpcSetting)
+            worker = Worker(self.jobManager, apiUrl, self.workerIndex, self.results, rpcSetting["LOGNAMES"], self.manager, rpcSetting["POLLPERIOD"], len(rpcSettings))
+            if len(self.rpcs)==0 and self.web3Settings['MAINRPC']:
+                self.worker = worker
+            else:
+                self.processes.append(worker)
+                worker.start()
+                atexit.register(self.stopWorkers)
+                self.addRpc(apiUrl, rpcSetting)
         atexit.register(self.stopWorkers)
-                
+            
     #add rpc and starts subprocess worker, if its hardhat stores it under self.hardhats, otherwise self.rpcs
     def addRpc(self, apiUrl, rpcSetting):
         rpc = RPC(apiUrl, rpcSetting, self.jobManager, self.workerIndex) 
         #if apiUrl looks like local server, assume its connected to a hardhat instance
-        worker = Worker(self.jobManager, apiUrl, self.workerIndex, self.results, rpcSetting["LOGNAMES"], self.manager)
-        if len(self.rpcs)==0 and self.web3Settings['MAINRPC']:
-            self.worker = worker
-        else:
-            self.processes.append(worker)
-            worker.start()
-            atexit.register(self.stopWorkers)
         if apiUrl[:17] == 'http://127.0.0.1:':  
             connected = self.jobManager.addJob('is_connected', target = rpc.id) 
             assert type(connected) != BaseException, 'cant connect to hardhat'
@@ -82,28 +82,26 @@ class MultiWeb3(Logger):
     def __getattr__(self, name, override = True, target = None):
             if name in self.__dict__ or not override :
                 return self.__dict__[name]
-            elif name == 'eth':
+            elif name == 'eth' or name == 'account':
                 return self
-            elif name == 'codec':
-                if self.worker:
-                    return self.worker.w3.codec
-                else:
-                    return self.processes[0].w3.codec   
+            # elif name == 'codec':
+            #     return self.w3.codec  
             else:
-                if self.worker:
+                if self.worker and self.worker.id&target:
                     return self.worker.getW3Attr(name)
                 else:
                     if not target:
                         target =self.rpcTargets
+                    assert target != 0, 'no target for job'
                     def method(*args, **kwargs):
-                        return self.jobManager.addJob(name, *args, target = target, **kwargs) 
+                        return self.jobManager.addJob(name, *args,  **kwargs) 
                     return method
 #-------------------------------------eth.get_logs functions----------------------------------------------
     
     #behaves like get_logs but breaks the job up to multiple chunks which can be delegated to multiple rpcs
     # in a pararallel environment to speed up the process
-    # if toBlock is current will scan up to the current block upon start
-    # if toBlock is latest will continuously scan to latest block
+    # if toBlock is 'current' will scan up to the current block upon start
+    # if toBlock is 'latest' will continuously scan for blocks after latest block is reached
     # continuous=True assumes mw3 is in its own process, mw3.results must be polled to get the results
     # continuous=False assumes mget_logsCyclic will be called
     def setup_get_logs(self, filter, results = None, rpcs = None, callback = None):
@@ -144,7 +142,17 @@ class MultiWeb3(Logger):
             self.logInfo(f'going live {rpc.apiUrl}')
             self.jobManager.addJob('live', self.filter,20,  target = rpc.id, wait = False, *args, **kwargs)
 
-
+    # def sample(self, start, end, fraction, filter):
+    #     import random
+    #     import copy
+    #     currentBlock = start
+    #     filter = self.getFilter()
+    #     i=0
+    #     while currentBlock < end:
+    #         _filter = copy.deepcopy(filter)
+    #         filter['fromBlock'] = currentBlock
+    #         filter['toBlock'] = end
+    #         self.rpcs[i%len(self.rpcs)].
     
 # if __name__ == '__main__':
 

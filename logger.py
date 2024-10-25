@@ -32,6 +32,7 @@ class Logger:
      
     def __init__(self, name = '', loggers= ['default']): 
         self.loggers = []
+        self.display = False
         self.name = name
         for logger in loggers:
             if logger == 'None':
@@ -63,7 +64,7 @@ class Logger:
         message = f"{multiprocessing.current_process().name} - {self.name} - {message}"
         for logger in self.loggers:
             logger.debug(message)
-        if display:
+        if display or self.display:
             print(message)
         if trace:
             traceback.print_exc()
@@ -72,7 +73,7 @@ class Logger:
         message = f"{multiprocessing.current_process().name} - {self.name} - {message}"
         for logger in self.loggers:
             logger.info(message)
-        if display:
+        if display or self.display:
             print(message)
         if trace:
             traceback.print_exc()
@@ -81,7 +82,7 @@ class Logger:
         message = f"{multiprocessing.current_process().name} - {self.name} - {message}"
         for logger in self.loggers:
             logger.warn(message)
-        if display:
+        if display or self.display:
             print(message)
             if trace:
                 traceback.print_exc()
@@ -90,7 +91,7 @@ class Logger:
         message = f"{multiprocessing.current_process().name} - {self.name} - {message}"
         for logger in self.loggers:
             logger.critical(message)
-        if display:
+        if display or self.display:
             print(message)
             if trace:
                 traceback.print_exc()

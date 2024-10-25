@@ -10,7 +10,7 @@ from utils import decodeEvents
 from utils import blocks, getLastBlock, getW3
 import asyncio
 from constants import c
-
+from math import sqrt
  
 class Job():
     def __init__(self, jobManager, method, args = (), kwargs = {}, target = 0xFF, result =None):
@@ -21,9 +21,10 @@ class Job():
         self.result = result
         self.jobManager = jobManager
 class Worker(Process, Logger):
-    def __init__(self, job_manager, apiUrl, id, results, lognames,manager, hardhat = False):
+    def __init__(self, job_manager, apiUrl, id, results, lognames,manager, pollPeriod,numPollers, hardhat = False):
         super().__init__()
         self.job_manager = job_manager
+        self.apiUrl = apiUrl
         self.w3, self.websocket = getW3(apiUrl)
         self.apiUrl = apiUrl
         self.id = id
@@ -33,18 +34,30 @@ class Worker(Process, Logger):
         self.hardhat = hardhat
         self.manager = manager
         self.lastBlock = 0
+        self.pollIndex = sqrt(self.id)
+        self.numPollers = numPollers
+        self.pollPeriod = pollPeriod
+        self.lastPoll = 0
         atexit.register(self.stop)
-        Logger.setProcessName(apiUrl[8:])
         Logger.__init__(self, apiUrl[8:], lognames)
-        self.logInfo(f'initialised {apiUrl} as {self.id}')
-
-    # runs continuously, checking for new jobs in the job manager
-    def run(self):
+        
+    async def asyncRun(self):
         while self.running:
             if not self.runCyclic(wait = False):
                 time.sleep(0.1)
+    # runs continuously, checking for new jobs in the job manager
+    def run(self):
+        Logger.setProcessName(self.apiUrl[8:])
+        self.logInfo(f'initialised {self.apiUrl} as {self.id}')
+        if self.websocket:
+            asyncio.run(self.asyncRun())
+        while self.running:
+            if not self.runCyclic(wait = False):
+                time.sleep(0.1)
+    
+
     # checks jobManager for any jobs for this worker and performs them
-    def runCyclic(self, wait = True):
+    async def runCyclic(self, wait = True):
             job = self.job_manager.getJob(self.id, wait = wait)
             if job:
                 self.logInfo(f'got job {job[0]} {blocks(job)}')
@@ -57,31 +70,50 @@ class Worker(Process, Logger):
     #goes into livescanning mode, constantly polls for new events and adds them to the shared result           
     def runLive(self, job):
         self.logInfo('running live job')
-        filter = job[1][0]
-        lastBlock = filter['fromBlock']
-        checkRange = job[1][1]
-        checkRange = 20
-        decode = False
-        if 'callback' in job[2]:
-            callback = job[2]['callback']
+        if not self.websocket:
+            filter = copy.deepcopy(job[1][0])
+            lastBlock = filter['fromBlock']
+            # checkRange = job[1][1]
+            # checkRange = 20
+            if 'callback' in job[2]:
+                callbackParams = job[2]['callback']
+            else:
+                callbackParams = None
+            while self.live:
+                try:
+                    filter['fromBlock'] = lastBlock
+                    filter['toBlock'] = 'latest'
+                    currentTime = time.time()
+                    self.nextPoll = currentTime - (currentTime % self.pollPeriod) + (self.pollIndex * self.pollPeriod)
+                    results = self.w3.eth.get_logs(filter)
+                    if len(results)>0:
+                        lastBlock = max(getLastBlock(results), self.lastBlock)
+                        if callbackParams != None:
+                            results = self.doCallback(results, callbackParams)
+                            self.logInfo(f'live job completed {blocks(filter)}')
+                        self.results.append(['get_logs_live', (filter,), {}, self.id, results])
+                except Exception as e:
+                    self.logWarn(f'error in livescan {e}')
+                    time.sleep(5)
+                while time.time()< self.nextPoll:
+                    self.runCyclic(wait = False)
+                    time.sleep(0.02)
         else:
-            callback = None
-        while self.live:
-            try:
-                filter['fromBlock'] = lastBlock
-                filter['toBlock'] = filter['fromBlock']+checkRange
-                results = self.w3.eth.get_logs(filter)
-                if len(results)>0:
-                    lastBlock = max(getLastBlock(results), self.lastBlock)
-                    if callback != None:
-                        results = callback(results)
-                        self.logInfo(f'live job completed {blocks(filter)}')
-                    self.results.append(['get_logs_live', (filter,), {}, self.id, results])
-            except Exception as e:
-                self.logWarn(f'error in livescan {e}')
-                time.sleep(5)
-            self.runCyclic(wait = False)
-
+            filter = self.w3.eth.filter(filter)
+            newEvents = self.filterParams.get_new_entries()
+            if len(newEvents) > 0:
+                self.handleEvents(newEvents)
+            time.sleep(self.pollInterval)
+            
+    def doCallback(self, results, callbackParams):
+        callback = callbackParams[0]
+        callbackKwargs = callbackParams[1]
+        if 'w3' in callbackKwargs:
+            callbackKwargs['w3'] = self.w3
+        if 'codec' in callbackKwargs:
+            callbackKwargs['codec'] = self.w3.codec
+        results = callback(results, **callbackKwargs)
+        return results
     #performs a requested job
     def doJob(self, job):
         method, args, kwargs, _, _ = job
@@ -101,10 +133,17 @@ class Worker(Process, Logger):
                 try:
                     callback = None
                     if 'callback' in kwargs:
-                        callback = kwargs.pop('callback')
+                        callback, callbackKwargs = kwargs.pop('callback')
+                        if 'w3' in callbackKwargs:
+                            callbackKwargs['w3'] = self.w3
+                        if 'codec' in callbackKwargs:
+                            callbackKwargs['codec'] = self.w3.codec
+                    self.logInfo(f'{method} job started')
                     res=  attr(*args, **kwargs)
+                    self.logInfo(f'{method} job finished')
                     if callback:
-                        res = callback(res)
+                        res = callback(res, **callbackKwargs)
+                        self.logInfo(f'{method} callback done')
                     return res
                 except Exception as e:
                     return e
@@ -114,12 +153,16 @@ class Worker(Process, Logger):
         try:
             attr = getattr(self.w3, method)
         except AttributeError as e:
-            attr = getattr(self.w3.eth, method)
+            try:
+                attr = getattr(self.w3.eth, method)
+            except AttributeError as e:
+                attr = getattr(self.w3.eth.account, method)
+                
         return attr
 
     def stop(self):
         self.running = False
-        
+     
 class SharedResult(Logger):
     def __init__(self, manager,name= 'sr'):
         super().__init__(name)
@@ -283,55 +326,55 @@ class ContinuousWrapper:
     def stop(self):
         self.running = False
         
-class PersistentProcessWrapper:
-    def __init__(self, wrapped_class, *args, **kwargs):
-        # Set up a pipe for communication between processes
-        self.parent_conn, self.child_conn = multiprocessing.Pipe()
-        # Store the class to be wrapped and its arguments
-        self.wrapped_class = wrapped_class
-        self.args = args
-        self.kwargs = kwargs
-        # Create and start the worker process
-        self.process = multiprocessing.Process(target=self._worker)
-        self.process.start()
-        # Event loop executor for async method calls
-        self.loop = asyncio.get_event_loop()
+# class PersistentProcessWrapper:
+#     def __init__(self, wrapped_class, *args, **kwargs):
+#         # Set up a pipe for communication between processes
+#         self.parent_conn, self.child_conn = multiprocessing.Pipe()
+#         # Store the class to be wrapped and its arguments
+#         self.wrapped_class = wrapped_class
+#         self.args = args
+#         self.kwargs = kwargs
+#         # Create and start the worker process
+#         self.process = multiprocessing.Process(target=self._worker)
+#         self.process.start()
+#         # Event loop executor for async method calls
+#         self.loop = asyncio.get_event_loop()
 
-    def _worker(self):
-        # Instantiate the wrapped class in the new process
-        instance = self.wrapped_class(*self.args, **self.kwargs)
-        while True:
-            # Wait for a method call or terminate signal from the parent process
-            method_name, method_args, method_kwargs = self.child_conn.recv()
-            if method_name == '__terminate__':
-                break
-            # Execute the method and send the result back to the parent process
-            method = getattr(instance, method_name)
-            result = method(*method_args, **method_kwargs)
-            self.child_conn.send(result)
+#     def _worker(self):
+#         # Instantiate the wrapped class in the new process
+#         instance = self.wrapped_class(*self.args, **self.kwargs)
+#         while True:
+#             # Wait for a method call or terminate signal from the parent process
+#             method_name, method_args, method_kwargs = self.child_conn.recv()
+#             if method_name == '__terminate__':
+#                 break
+#             # Execute the method and send the result back to the parent process
+#             method = getattr(instance, method_name)
+#             result = method(*method_args, **method_kwargs)
+#             self.child_conn.send(result)
 
-    async def _async_method(self, method_name, *args, **kwargs):
-        # Send method call asynchronously and await the result
-        await self.loop.run_in_executor(
-            None, self.parent_conn.send, (method_name, args, kwargs)
-        )
-        # Wait asynchronously for the result from the child process
-        return await self.loop.run_in_executor(
-            None, self.parent_conn.recv
-        )
+#     async def _async_method(self, method_name, *args, **kwargs):
+#         # Send method call asynchronously and await the result
+#         await self.loop.run_in_executor(
+#             None, self.parent_conn.send, (method_name, args, kwargs)
+#         )
+#         # Wait asynchronously for the result from the child process
+#         return await self.loop.run_in_executor(
+#             None, self.parent_conn.recv
+#         )
 
-    def __getattr__(self, method_name):
-        # Return an async function that calls the method in the child process
-        async def async_method(*args, **kwargs):
-            return await self._async_method(method_name, *args, **kwargs)
-        return async_method
+#     def __getattr__(self, method_name):
+#         # Return an async function that calls the method in the child process
+#         async def async_method(*args, **kwargs):
+#             return await self._async_method(method_name, *args, **kwargs)
+#         return async_method
 
-    async def close(self):
-        # Send a termination signal to the child process asynchronously
-        await self._async_method('__terminate__')
-        # Wait for the process to terminate
-        await self.loop.run_in_executor(None, self.process.join)
+#     async def close(self):
+#         # Send a termination signal to the child process asynchronously
+#         await self._async_method('__terminate__')
+#         # Wait for the process to terminate
+#         await self.loop.run_in_executor(None, self.process.join)
 
-    def __del__(self):
-        # Ensure the process is cleaned up when the object is destroyed
-        asyncio.run(self.close())
+#     def __del__(self):
+#         # Ensure the process is cleaned up when the object is destroyed
+#         asyncio.run(self.close())
