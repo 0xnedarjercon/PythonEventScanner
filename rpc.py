@@ -11,25 +11,28 @@ from hardhat import runHardhat
 import copy
 from multiprocessing.managers import ListProxy, DictProxy
 from utils import blocks, toNative
-
-    
-def getW3(cfg):
-    apiURL = cfg["APIURL"]
-    if apiURL[0:3] == "wss":
-        provider = Web3.WebsocketProvider(apiURL)
-        webSocket = True
-    elif apiURL[0:4] == "http":
-        provider = Web3.HTTPProvider(apiURL)
-        provider.middlewares.clear()
-        webSocket = False
-    elif apiURL[0] == "/":
-        provider = Web3.IPCProvider(apiURL)
-        webSocket = False
-    else:
-        print(f"apiUrl must start with wss, http or '/': {apiURL}")
-        sys.exit(1)
-    w3 = Web3(provider)
-    return w3, webSocket
+from utils import getW3
+from web3 import PersistentConnection
+import tracemalloc
+tracemalloc.start()
+import websockets
+# def getW3(cfg):
+#     apiURL = cfg["APIURL"]
+#     if apiURL[0:3] == "wss":
+#         provider = Web3.WebsocketProvider(apiURL)
+#         webSocket = True
+#     elif apiURL[0:4] == "http":
+#         provider = Web3.HTTPProvider(apiURL)
+#         provider.middlewares.clear()
+#         webSocket = False
+#     elif apiURL[0] == "/":
+#         provider = Web3.IPCProvider(apiURL)
+#         webSocket = False
+#     else:
+#         print(f"apiUrl must start with wss, http or '/': {apiURL}")
+#         sys.exit(1)
+#     w3 = Web3(provider)
+#     return w3, webSocket
 
 
 
@@ -47,70 +50,147 @@ def getEventParameters(param):
         event,
     )
 
-
+    
 
 class RPC(Logger):
 
-    def __init__(self, apiUrl, rpcSettings, jobManager, id):
+    def __init__(self, apiUrl, rpcSettings):
         self.apiUrl = apiUrl
-        super().__init__('rpc')
+        super().__init__(apiUrl[8:])
+        self.apiUrl = apiUrl
         self.maxChunkSize = rpcSettings["MAXCHUNKSIZE"]
         self.currentChunkSize = rpcSettings["STARTCHUNKSIZE"]
         self.eventsTarget = rpcSettings["EVENTSTARGET"]
-        self.jobs = []
-        self.failCount = 0
-        self.jobManager = jobManager
-        self.id = id
-        self.lastBlock = 0
+        self.modes = rpcSettings["MODES"]
         self.lastTime = 0
-        Logger.setProcessName(apiUrl)
+        self.gasPrice = None
+        self.currentJobs = []
+        self.running = False
+        self.failCount = 0
+        self.currentSubScriptions = []
 
-
+    async def init(self):
+        self.w3, self.websocket = await getW3(self.apiUrl)
+        return self
 
     #takes a eth.get_logs job based on its scan parameters and the remaining range to be scanned
-    def takeJob(self, remaining, filter, consume = True, callback = None):
-            startBlock = remaining[0]
-            endBlock = min(remaining[0] + self.currentChunkSize, remaining[1])
-            if consume:
+    async def doScan(self, remaining, filter, results, jobLock):
+        if len(self.currentJobs)==0:
+            async with jobLock:
+                startBlock = remaining[0]
+                endBlock = min(remaining[0] + self.currentChunkSize, remaining[1])
                 remaining[0] = endBlock + 1
-            newJob = (startBlock, endBlock)
-            rpcFilter = filter.copy()
-            rpcFilter['fromBlock'] = startBlock
-            rpcFilter['toBlock'] = endBlock
-            self.addGetLogsJob(rpcFilter, callback = callback)
- 
-    #wraps a filter into a get_logs job and adds it to the job manager
-    def addGetLogsJob(self, rpcFilter, callback = None):
-            self.jobs.append(self.jobManager.addJob('get_logs', rpcFilter, callback=callback, target = self.id, wait=False))
-    
-    #checks for any completed jobs from the worker and returns them, handles rpc errors
-    def checkJobs(self, handleErrors = True):
-        succsessfulJobs=[]
-        completedJobs = self.jobManager.checkJobs(self.jobs)
-        for job in completedJobs:
-            if isinstance(job[-1], BaseException):
-                if handleErrors:
-                    self.logInfo(f'error with job {blocks(job)} {job[-1]} {self.apiUrl}')
-                    self.handleError(job)
-            else:
-                self.logInfo(f'successful job: {blocks(job)}')
-                succsessfulJobs.append(job)
-        if len(succsessfulJobs)>0:
-            lastJob = succsessfulJobs[-1]
-            self.throttle(lastJob[-1], lastJob[1][0]['toBlock'] - lastJob[1][0]['fromBlock'])
-        return succsessfulJobs
+            filter['fromBlock'] = startBlock
+            filter['toBlock'] = endBlock
+            self.logInfo(f'took job {blocks(filter)}')
+            self.currentJobs.append(filter)
+        filter = self.currentJobs.pop(0)
+        try:
+            result = await self.w3.eth.get_logs(filter)
+            if len(result)>0:
+                await results.put([filter['fromBlock'] ,result, filter['toBlock']])
+                self.logInfo(f'added results {filter}')
+            self.logInfo(f'successful job')
+            self.failCount = 0
+            self.throttle(result, filter['toBlock']-filter['fromBlock'])     
+        except Exception as error:
+                self.logInfo(f'error with job {error}')
+                if self.failCount >20:
+                    self.logWarn(f'too many failures, shutting down rpc...')
+                    self.currentJobs.append(filter)
+                    _min = min(x['fromBlock'] for x in self.currentJobs+[filter])
+                    _max = max(x['toBlockBlock'] for x in self.currentJobs+[filter])
+                    filter['fromBlock'] = _min
+                    filter['toBlock'] = _max
 
-    #removes all jobs matching the method for this rpc from both local list and jobmanager, returns the removed jobs 
-    def popJobs(self, methods):
-        removedJobs = self.jobManager.popAllJobs(methods, self.id)
-        jobsLength = len(self.jobs)
-        for i in range(jobsLength):
-            j = jobsLength-i-1
-            if self.jobs[j] in removedJobs:
-                self.jobs.pop(j)
-        return removedJobs
+                    await results.put(filter)
+                    self.running = False
+                    return
+                self.handleError([filter, error])
 
-    #throttles the block scan range depending on the configured target number of events
+
+    async def get_logs(self, remaining, filter, results,  jobLock):
+        self.running = True
+        self.filter = filter = filter.copy()
+        async with jobLock:
+            self.live = (remaining[1] == 'latest')
+        if self.live:
+            await self.liveScan(remaining, filter, results,  jobLock)
+        else:
+            finished = False
+            while (self.live or not (finished and len(self.currentJobs) == 0)) and self.running:
+                await self.doScan(remaining, filter, results,  jobLock)
+                if not self.running:
+                    return
+                await asyncio.sleep(0) 
+                async with jobLock:
+                    finished = remaining[0]>= remaining[1]    
+        self.running = False
+            
+    async def liveScan(self, remaining, filter, results, jobLock):
+        lastRxBlock =0
+        if self.websocket:
+            subscriptionId = await self.w3.eth.subscribe("newHeads")
+            fails = 0
+            while self.live:
+                try:
+                    self.logInfo(f'checking for new messages, timeout 10')
+                    payload = await asyncio.wait_for(self.w3.socket._manager._get_next_message(), 10)
+                    self.logInfo(f'message received')
+                    result = payload['result']
+                    blockNumber = result['number']
+                    self.gasPrice = result.baseFeePerGas
+                    self.lastTimestamp = result.timestamp
+                    async with jobLock:
+                        lastBlock = remaining[0]
+                    self.logInfo(f'new block {blockNumber}')
+                    if lastBlock < blockNumber:
+                        self.logInfo(f'processing job: current time{time.time()}, block time: {result.timestamp}, delta: {time.time()-result.timestamp}' )
+                        lastRxBlock= await self.processNewEvents(filter, remaining, jobLock, results, lastRxBlock)
+                        fails = 0
+                    else:
+                        self.logInfo(f'not new block, skipping')
+                except (websockets.exceptions.ConnectionClosedError, asyncio.TimeoutError )as e:
+                    fails += 0
+                    self.logInfo(f'error {e}, restarting w3 {fails}/3')
+                    await asyncio.sleep(3)
+                    self.w3, self.websocket = await getW3(self.apiUrl)
+                    subscriptionId = await self.w3.eth.subscribe("newHeads")
+                    if fails >3:
+                        self.live = False
+                        self.running = False
+                        self.logWarn(f'too many errors in rpc, shutting down')
+                        return
+                except Exception as e:
+                    self.logWarn(f'unhandled error in livescan {e}')
+            await self.w3.eth.unsubscribe(subscriptionId)          
+        else:
+            while self.live:
+                try:
+                    lastRxBlock= await self.processNewEvents(filter, remaining, jobLock, results, lastRxBlock)
+                except Exception as e:
+                    self.logWarn(f'unhandled error in livescan {e}')
+                    
+    async def processNewEvents(self, filter, remaining, jobLock, results, lastRxBlock, blockNum = None):
+        async with jobLock:
+            remaining[0] = max(lastRxBlock-1, remaining[0])
+            self.logInfo(f'remaining updated to {remaining}, {lastRxBlock}')
+            filter['fromBlock'] = remaining[0]
+        result = await self.w3.eth.get_logs(filter)
+        if len(result)>0:
+            lastRxBlock = result[-1]['blockNumber']
+            await results.put([filter['fromBlock'] ,result, lastRxBlock])
+            self.logInfo(f'livescan update to {lastRxBlock}')
+        # elif blockNum == None:
+        #     lastRxBlock = await self.w3.eth.get_block_number()
+        #     self.logInfo(f'last getBlockNumber: {lastRxBlock}')
+        # else:
+        #     lastRxBlock = blockNum
+        self.logInfo(f'job success {len(result)} events')
+
+        return lastRxBlock
+
+            
     def throttle(self, events, blockRange):
         if len(events) > 0:
             ratio = self.eventsTarget / (len(events))
@@ -131,7 +211,7 @@ class RPC(Logger):
                     if maxBlock > self.currentChunkSize:
                         raise Exception
                     else:
-                        filter = failingJob[1][0]
+                        filter = failingJob[0]
                         self.maxChunk = maxBlock
                         self.currentChunkSize = maxBlock                                
         except Exception as error:
@@ -164,8 +244,6 @@ class RPC(Logger):
         self.eventsTarget = self.eventsTarget*0.95
         self.splitJob(2, failingJob)
     def handleError(self, failingJob):
-        if failingJob[0] == 'get_logs':
-            self.logInfo('get logs error')
             e = failingJob[-1]
             if type(e) == ValueError:
                 if e.args[0]["message"] == "block range is too wide" or 'range is too large' in e.args[0]["message"] :
@@ -198,35 +276,23 @@ class RPC(Logger):
                 )
                 self.splitJob(2, failingJob)
                 self.failCount += 1
-        else:
-            self.logWarn(
-                    f"unhandled error {type(e), e},{traceback.format_exc()}  splitting jobs",
-                    True,
-                )
+
     # reduces the scan range by a specified factor, 
     # removes all jobs in the jobmanager, splits them based on the new scan range and adds them back
     def splitJob(self,numJobs, failingJob ,chunkSize =None, reduceChunkSize=True):
-        self.logInfo(f'spitting jobs due to {blocks(failingJob)}')
+        self.logInfo(f'spitting jobs from {blocks(failingJob)}')
         if type(chunkSize) !=(int):
-            chunkSize = math.ceil((failingJob[1][0]['toBlock'] - failingJob[1][0]['fromBlock']) / numJobs)
+            chunkSize = math.ceil((failingJob[0]['toBlock'] - failingJob[0]['fromBlock']) / numJobs)
         if reduceChunkSize:
             self.currentChunkSize = max(chunkSize, 1)
-        removedJobs = self.popJobs(['get_logs'])
-        removedJobs.insert(0, failingJob)
-        newJobs = []
-        for job in (removedJobs):
-            self.logInfo(f'spitting jobs {blocks(failingJob)}')
-            filter = job[1][0]
-            currentBlock = filter['fromBlock'] 
-            while currentBlock <= job[1][0]['toBlock']:
-                _filter = copy.deepcopy(filter)
-                _filter['fromBlock'] = currentBlock
-                _filter['toBlock'] = min(currentBlock+chunkSize, filter['toBlock'])
-                newJobs.append(['get_logs', (_filter,),  {},self.id, None])
-                currentBlock = _filter['toBlock'] + 1
-                self.logInfo(f'added job {blocks(job)}')
-        self.jobs += self.jobManager.addJobs(newJobs)
-
-
+        filter = failingJob[0]
+        currentBlock = filter['fromBlock'] 
+        while currentBlock <= failingJob[0]['toBlock']:
+            _filter = copy.deepcopy(filter)
+            _filter['fromBlock'] = currentBlock
+            _filter['toBlock'] = min(currentBlock+chunkSize, filter['toBlock'])
+            self.currentJobs.append(_filter)
+            currentBlock = _filter['toBlock'] + 1
+            self.logInfo(f'added job {blocks(_filter)}')
 
 

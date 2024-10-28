@@ -49,18 +49,18 @@ class MultiWeb3(Logger):
         self.usedRpcs = self.rpcs
         self.rpcTargets = 0
         for apiUrl, rpcSetting in rpcSettings.items():
-            worker = Worker(self.jobManager, apiUrl, self.workerIndex, self.results, rpcSetting["LOGNAMES"], self.manager, rpcSetting["POLLPERIOD"], len(rpcSettings))
-            if len(self.rpcs)==0 and self.web3Settings['MAINRPC']:
-                self.worker = worker
-            else:
-                self.processes.append(worker)
-                worker.start()
-                atexit.register(self.stopWorkers)
+            # worker = Worker(self.jobManager, apiUrl, self.workerIndex, self.results, rpcSetting["LOGNAMES"], self.manager, rpcSetting["POLLPERIOD"], len(rpcSettings))
+            # if len(self.rpcs)==0 and self.web3Settings['MAINRPC']:
+            #     self.worker = worker
+            # else:
+            #     self.processes.append(worker)
+            #     worker.start()
+            #     atexit.register(self.stopWorkers)
                 self.addRpc(apiUrl, rpcSetting)
         atexit.register(self.stopWorkers)
             
     #add rpc and starts subprocess worker, if its hardhat stores it under self.hardhats, otherwise self.rpcs
-    def addRpc(self, apiUrl, rpcSetting):
+    async def addRpc(self, apiUrl, rpcSetting):
         rpc = RPC(apiUrl, rpcSetting, self.jobManager, self.workerIndex) 
         #if apiUrl looks like local server, assume its connected to a hardhat instance
         if apiUrl[:17] == 'http://127.0.0.1:':  

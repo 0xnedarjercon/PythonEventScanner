@@ -2,7 +2,7 @@ import os
 import json
 import time
 from logger import Logger
-
+import aiofiles
 
 
 
@@ -57,33 +57,54 @@ class FileHandler(Logger):
             self.logInfo(f"current data saved to {self.currentFileName}")
         else:
             self.logDebug(f"{self.currentFile} not saved, no changed data")
-    
+            
+    async def asyncSave(self, deleteOld=True, indent=None):
+        if self.currentData and self.latest != self.start:
+            newName = f"{self.start}.{self.latest}.json"
+            async with aiofiles.open(self.filePath + newName, "w") as f:
+                await f.write(json.dumps(self.currentData, indent=indent))
+            if deleteOld and newName != self.currentFileName:
+                self.logDebug(f"deleting {self.currentFile}")
+                try:
+                    os.remove(self.filePath + self.currentFileName)
+                except FileNotFoundError as e:
+                    self.logDebug("file not found error deleting {e}")
+            self.currentFile = (self.start, self.latest)
+            self.lastSave = time.time()
+            self.logInfo(f"current data saved to {self.currentFileName}")
+        else:
+            self.logDebug(f"{self.currentFile} not saved, no changed data")
     #results array [fromBlock, events, toBlock]
-    def process(self, results):
-        for result in results:
-            self.addToPending(result)
-        numBlocks = self.mergePending()
+    async def process(self, results, guarunteedContinuous =False):
+        if guarunteedContinuous:
+            for result in results:
+                self.currentData.update(result[1])
+                self.latest = max(result[2], self.latest)
+            await self.asyncSave()
+        else:
+            for result in results:
+                self.addToPending(result)
+            self.mergePending()
         if len(self.currentData) > self.maxEntries:
-            self.save(indent=4)
+            await self.asyncSave(indent=4)
             self.createNewFile()
         elif (
             time.time() > self.lastSave + self.saveInterval and self.currentData != None
         ):
-            self.save()
-        return numBlocks
+            await self.asyncSave()
+
 
     def mergePending(self):
-        numBlocks = 0
         while len(self.pending) > 0 and self.pending[0][0] <= self.latest + 1:
             self.currentData.update(self.pending[0][1])
             self.latest = max(self.pending[0][2], self.latest)
             self.logInfo(
                 f"pending merged to current data {self.pending[0][0]} to {self.pending[0][2]}, latest stored: {self.latest}"
             )
-            numBlocks += self.pending[0][2] - self.pending[0][0]
+            self.pending[0][2] - self.pending[0][0]
             self.pending.pop(0)
         self.logInfo(f"waiting for: {self.latest+1}")
-        return numBlocks
+
 
     def addToPending(self, element):
         position = 0
@@ -159,7 +180,6 @@ class FileHandler(Logger):
             else:
                 if files[i][0] > start:
                     missing.append((start, files[i][0] - 1))
-
             start = max(files[i][1] + 1, start)
             i += 1
         if start < end:

@@ -1,8 +1,10 @@
 from multiprocessing.managers import ListProxy, DictProxy
 from web3._utils.events import get_event_data
 from web3 import Web3
+from aiohttp import ClientSession
+from web3 import AsyncWeb3, AsyncHTTPProvider, AsyncIPCProvider
 import sys
-
+from web3 import AsyncWeb3
 # extracts the blocks from a job
 def blocks(filter):
     try:
@@ -17,26 +19,26 @@ def blocks(filter):
     except:
         return 'not get_logs'
     
-def getW3(cfg, request_kwargs={'timeout': 10}):
+async def getW3(cfg, request_kwargs={'timeout': 10}):
     if type(cfg) == dict:
         apiURL = cfg["APIURL"]
     else:
         apiURL = cfg
     if apiURL[0:3] == "wss":
-        provider = Web3.WebsocketProvider(apiURL)
+        w3 = await AsyncWeb3(AsyncWeb3.WebSocketProvider(apiURL))
         webSocket = True
     elif apiURL[0:4] == "http":
-        provider = Web3.HTTPProvider(apiURL, request_kwargs)
+        provider = w3 = AsyncWeb3(AsyncHTTPProvider(apiURL))
         # provider.middleware.clear()
         webSocket = False
     elif apiURL[0] == "/":
-        provider = Web3.IPCProvider(apiURL)
+        provider = Web3.AsyncWeb3(AsyncIPCProvider(apiURL))
         webSocket = False
     else:
         print(f"apiUrl must start with wss, http or '/': {apiURL}")
         sys.exit(1)
         
-    w3 = Web3(provider)
+    # w3 = Web3(provider)
     return w3, webSocket 
 # converts multiprocessing types to native types for easier debugging
 def toNative(obj):
